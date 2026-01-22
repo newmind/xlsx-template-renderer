@@ -54,6 +54,34 @@ xls-template-renderer는 Jinja2와 유사한 문법을 사용하여 xlsx 파일�
 
 **빈 리스트:** 순회할 리스트가 비어있으면 해당 범위의 모든 행이 삭제됩니다.
 
+#### 루프 변수
+
+for 루프 내에서 `loop` 객체를 통해 현재 반복 상태에 접근할 수 있습니다.
+
+| 변수 | 설명 | 예시 값 (3개 항목 중 2번째) |
+|------|------|---------------------------|
+| `loop.index` | 1부터 시작하는 인덱스 | 2 |
+| `loop.index0` | 0부터 시작하는 인덱스 | 1 |
+| `loop.first` | 첫 번째 반복이면 True | False |
+| `loop.last` | 마지막 반복이면 True | False |
+| `loop.length` | 전체 항목 수 | 3 |
+
+**예시:**
+
+| A열 | B열 |
+|-----|-----|
+| {% for item in items %} | |
+| {{ loop.index }}. {{ item.name }} | |
+| {% endfor %} | |
+
+**결과:**
+
+| A열 |
+|-----|
+| 1. 상품A |
+| 2. 상품B |
+| 3. 상품C |
+
 #### if 조건문
 
 ```
@@ -78,6 +106,8 @@ xls-template-renderer는 Jinja2와 유사한 문법을 사용하여 xlsx 파일�
 - 단순 변수: `{% if items %}` (리스트가 비어있지 않으면 참)
 - 비교: `{% if count > 0 %}`, `{% if status == "active" %}`
 - 부정: `{% if not is_deleted %}`
+- 논리 연산: `{% if a and b %}`, `{% if a or b %}`
+- 포함 여부: `{% if item in items %}`, `{% if item not in items %}`
 
 ### 주석 (Comment)
 
@@ -100,6 +130,30 @@ xls-template-renderer는 Jinja2와 유사한 문법을 사용하여 xlsx 파일�
 | 곱셈 | `{{ price * 1.1 }}` | 1100 |
 | 나눗셈 | `{{ total / 2 }}` | 50 |
 | 문자열 연결 | `{{ name + "님" }}` | 홍길동님 |
+
+### 필터 (Filters)
+
+필터는 `|` 기호를 사용하여 값을 변환합니다.
+
+| 필터 | 설명 | 예시 |
+|------|------|------|
+| `default(값)` | None일 때 기본값 반환 | `{{ value\|default('N/A') }}` |
+| `length` | 길이 반환 | `{{ items\|length }}` |
+| `join(구분자)` | 리스트를 문자열로 연결 | `{{ items\|join(', ') }}` |
+
+**필터 체이닝:**
+```
+{{ value|default('')|length }}
+```
+
+### 삼항 연산자 (Ternary)
+
+조건에 따라 다른 값을 반환합니다.
+
+```
+{{ 'active' if is_active else 'inactive' }}
+{{ count if count > 0 else '없음' }}
+```
 
 ### 데이터 접근
 
@@ -209,7 +263,7 @@ Excel에서 셀 편집 모드(F2)로 들어가 특정 텍스트만 선택 후 �
 1. **제어문 위치**: 제어문(`{% %}`)과 주석(`{# #}`)은 빈 행의 A열에만 위치
 2. **제어문 혼합 불가**: 제어문 셀에는 다른 텍스트가 없어야 함
 3. **종료 태그 필수**: `{% endfor %}`, `{% endif %}` 필수
-4. **복잡한 표현식 미지원**: 삼항 연산자, 필터 등은 미지원
+4. **미지원 기능**: 매크로, include, 블록 상속 등
 
 ## 사용 예시
 

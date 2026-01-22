@@ -1,12 +1,15 @@
 """
 Expression evaluator for template variables.
-Supports: arithmetic (+, -, *, /), string concatenation, attribute access, index access.
+Supports: arithmetic (+, -, *, /), string concatenation, attribute access, index access,
+filters (|), and ternary operator (if...else).
 """
 
 import re
 import ast
 import operator
-from typing import Any, Dict
+from typing import Any, Dict, List
+
+from .filters import parse_filter_expression, apply_filter
 
 
 # Supported operators
@@ -15,6 +18,16 @@ OPERATORS = {
     ast.Sub: operator.sub,
     ast.Mult: operator.mul,
     ast.Div: operator.truediv,
+}
+
+# Comparison operators
+COMPARE_OPS = {
+    ast.Eq: operator.eq,
+    ast.NotEq: operator.ne,
+    ast.Lt: operator.lt,
+    ast.LtE: operator.le,
+    ast.Gt: operator.gt,
+    ast.GtE: operator.ge,
 }
 
 
@@ -93,6 +106,8 @@ class ExpressionEvaluator:
         - Variable access: name, item.price, items[0].name
         - Arithmetic: price * 1.1, 10 + 5
         - String concatenation: "hello" + name
+        - Filters: value|default('N/A'), items|length
+        - Ternary: 'yes' if condition else 'no'
         
         Returns the evaluated value, or None if evaluation fails.
         """
@@ -101,10 +116,19 @@ class ExpressionEvaluator:
         if not expression:
             return None
         
+        # Parse filters first (e.g., "value|default('N/A')")
+        base_expr, filters = parse_filter_expression(expression)
+        
         try:
             # Parse the expression into an AST
-            tree = ast.parse(expression, mode='eval')
-            return self._eval_node(tree.body)
+            tree = ast.parse(base_expr, mode='eval')
+            result = self._eval_node(tree.body)
+            
+            # Apply filters
+            for filter_name, filter_args in filters:
+                result = apply_filter(result, filter_name, filter_args)
+            
+            return result
         except (SyntaxError, ValueError, TypeError, KeyError):
             return None
     
@@ -152,17 +176,68 @@ class ExpressionEvaluator:
                 return None
         
         elif isinstance(node, ast.UnaryOp):
-            # Unary operations: -x
+            # Unary operations: -x, +x, not x
             operand = self._eval_node(node.operand)
-            if operand is None:
-                return None
             
             if isinstance(node.op, ast.USub):
+                if operand is None:
+                    return None
                 return -operand
             elif isinstance(node.op, ast.UAdd):
+                if operand is None:
+                    return None
                 return +operand
+            elif isinstance(node.op, ast.Not):
+                # not operator: not x
+                return not operand
             else:
                 return None
+        
+        elif isinstance(node, ast.IfExp):
+            # Ternary operator: 'yes' if condition else 'no'
+            condition = self._eval_node(node.test)
+            if condition:
+                return self._eval_node(node.body)
+            else:
+                return self._eval_node(node.orelse)
+        
+        elif isinstance(node, ast.Compare):
+            # Comparison: a > b, a == b, etc.
+            left = self._eval_node(node.left)
+            if left is None:
+                return None
+            
+            # Handle chained comparisons: a < b < c
+            for op, comparator in zip(node.ops, node.comparators):
+                right = self._eval_node(comparator)
+                if right is None:
+                    return None
+                
+                op_type = type(op)
+                if op_type in COMPARE_OPS:
+                    if not COMPARE_OPS[op_type](left, right):
+                        return False
+                    left = right
+                else:
+                    return None
+            
+            return True
+        
+        elif isinstance(node, ast.BoolOp):
+            # Boolean operations: and, or
+            if isinstance(node.op, ast.And):
+                for value in node.values:
+                    result = self._eval_node(value)
+                    if not result:
+                        return False
+                return True
+            elif isinstance(node.op, ast.Or):
+                for value in node.values:
+                    result = self._eval_node(value)
+                    if result:
+                        return True
+                return False
+            return None
         
         else:
             return None

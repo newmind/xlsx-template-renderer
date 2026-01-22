@@ -270,3 +270,147 @@ class TestExpressionEvaluatorPaths:
         context = {}
         # Literal as base for attribute access
         assert evaluate_expression("123.attr", context) is None
+
+
+class TestTernaryOperator:
+    """Tests for ternary operator (if...else)"""
+    
+    def test_simple_ternary_true(self):
+        context = {"flag": True}
+        assert evaluate_expression("'yes' if flag else 'no'", context) == 'yes'
+    
+    def test_simple_ternary_false(self):
+        context = {"flag": False}
+        assert evaluate_expression("'yes' if flag else 'no'", context) == 'no'
+    
+    def test_ternary_with_variable(self):
+        context = {"count": 5}
+        assert evaluate_expression("'many' if count else 'none'", context) == 'many'
+    
+    def test_ternary_with_zero(self):
+        context = {"count": 0}
+        assert evaluate_expression("'many' if count else 'none'", context) == 'none'
+    
+    def test_ternary_with_comparison(self):
+        context = {"age": 20}
+        assert evaluate_expression("'adult' if age >= 18 else 'minor'", context) == 'adult'
+    
+    def test_ternary_with_numbers(self):
+        context = {"x": 10}
+        assert evaluate_expression("x * 2 if x > 5 else x", context) == 20
+    
+    def test_ternary_none_condition(self):
+        context = {"value": None}
+        assert evaluate_expression("'has' if value else 'none'", context) == 'none'
+    
+    def test_nested_ternary(self):
+        context = {"x": 2}
+        # x == 1 ? 'one' : (x == 2 ? 'two' : 'other')
+        assert evaluate_expression("'one' if x == 1 else ('two' if x == 2 else 'other')", context) == 'two'
+
+
+class TestFiltersInExpression:
+    """Tests for filters in expressions"""
+    
+    def test_default_filter(self):
+        context = {"value": None}
+        assert evaluate_expression("value|default('N/A')", context) == 'N/A'
+    
+    def test_default_filter_with_value(self):
+        context = {"value": "hello"}
+        assert evaluate_expression("value|default('N/A')", context) == 'hello'
+    
+    def test_length_filter(self):
+        context = {"items": [1, 2, 3, 4, 5]}
+        assert evaluate_expression("items|length", context) == 5
+    
+    def test_length_filter_empty(self):
+        context = {"items": []}
+        assert evaluate_expression("items|length", context) == 0
+    
+    def test_join_filter(self):
+        context = {"items": ["a", "b", "c"]}
+        assert evaluate_expression("items|join(',')", context) == 'a,b,c'
+    
+    def test_join_filter_with_space(self):
+        context = {"words": ["hello", "world"]}
+        assert evaluate_expression("words|join(' ')", context) == 'hello world'
+    
+    def test_filter_chaining(self):
+        context = {"value": None}
+        # default returns '', length of '' is 0
+        assert evaluate_expression("value|default('')|length", context) == 0
+    
+    def test_filter_on_attribute(self):
+        context = {"user": {"tags": ["admin", "active"]}}
+        assert evaluate_expression("user.tags|length", context) == 2
+    
+    def test_filter_on_missing_value(self):
+        context = {}
+        assert evaluate_expression("unknown|default('fallback')", context) == 'fallback'
+
+
+class TestBoolOpInExpression:
+    """Tests for BoolOp (and, or) in expression evaluator"""
+    
+    def test_and_in_expression(self):
+        """and 연산자가 표현식에서 동작하는지 테스트"""
+        context = {"a": True, "b": True, "c": False}
+        assert evaluate_expression("a and b", context) is True
+        assert evaluate_expression("a and c", context) is False
+    
+    def test_or_in_expression(self):
+        """or 연산자가 표현식에서 동작하는지 테스트"""
+        context = {"a": True, "b": False, "c": False}
+        assert evaluate_expression("a or b", context) is True
+        assert evaluate_expression("b or c", context) is False
+    
+    def test_not_in_expression(self):
+        """not 연산자가 표현식에서 동작하는지 테스트"""
+        context = {"flag": True}
+        assert evaluate_expression("not flag", context) is False
+        context = {"flag": False}
+        assert evaluate_expression("not flag", context) is True
+    
+    def test_combined_bool_ops(self):
+        """복합 불린 연산자 테스트"""
+        context = {"a": True, "b": False, "c": True}
+        # (a and b) or c = False or True = True
+        assert evaluate_expression("a and b or c", context) is True
+
+
+class TestComparisonUnsupportedOps:
+    """Tests for unsupported comparison operators"""
+    
+    def test_is_operator_not_supported(self):
+        """is 연산자는 COMPARE_OPS에 없으므로 None 반환"""
+        context = {"value": None}
+        # 'is' operator는 COMPARE_OPS에 없음
+        result = evaluate_expression("value is None", context)
+        # ast.Is는 COMPARE_OPS에 없으므로 None 반환
+        assert result is None
+    
+    def test_is_not_operator_not_supported(self):
+        """is not 연산자는 COMPARE_OPS에 없으므로 None 반환"""
+        context = {"value": 123}
+        result = evaluate_expression("value is not None", context)
+        assert result is None
+
+
+class TestChainedComparison:
+    """Tests for chained comparisons"""
+    
+    def test_chained_comparison_true(self):
+        """연쇄 비교 a < b < c 테스트"""
+        context = {"a": 1, "b": 5, "c": 10}
+        assert evaluate_expression("a < b < c", context) is True
+    
+    def test_chained_comparison_false(self):
+        """연쇄 비교 실패 테스트"""
+        context = {"a": 1, "b": 5, "c": 3}
+        assert evaluate_expression("a < b < c", context) is False
+    
+    def test_chained_comparison_with_none(self):
+        """연쇄 비교에서 None 값 테스트"""
+        context = {"a": 1, "b": None}
+        assert evaluate_expression("a < b < 10", context) is None

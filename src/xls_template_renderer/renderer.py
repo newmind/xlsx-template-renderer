@@ -27,6 +27,29 @@ from .expressions import evaluate_expression, resolve_path
 from .exceptions import TemplateSyntaxError, TemplateRenderError
 
 
+class LoopContext:
+    """
+    Provides loop metadata for {% for %} loops.
+    
+    Attributes:
+        index: 1-based iteration count
+        index0: 0-based iteration count
+        first: True if first iteration
+        last: True if last iteration
+        length: Total number of items
+    """
+    
+    def __init__(self, index0: int, length: int):
+        self.index = index0 + 1
+        self.index0 = index0
+        self.first = index0 == 0
+        self.last = index0 == length - 1
+        self.length = length
+    
+    def __repr__(self):
+        return f"LoopContext(index={self.index}, first={self.first}, last={self.last}, length={self.length})"
+
+
 def render_template(
     template_path: str,
     output_path: str,
@@ -171,12 +194,18 @@ def _process_rows(
                 if iterable is None:
                     iterable = []
                 
+                # Convert to list to get length
+                iterable_list = list(iterable) if not isinstance(iterable, (list, tuple)) else iterable
+                iterable_length = len(iterable_list)
+                
                 # Process loop body for each item
                 body_rows = rows_data[row_idx + 1:end_idx]
                 
-                for item in iterable:
-                    # Create new context with loop variable
-                    loop_context = {**context, token.loop_var: item}
+                for idx, item in enumerate(iterable_list):
+                    # Create loop context object
+                    loop_obj = LoopContext(idx, iterable_length)
+                    # Create new context with loop variable and loop object
+                    loop_context = {**context, token.loop_var: item, 'loop': loop_obj}
                     # Recursively process body rows
                     processed = _process_rows(body_rows, loop_context)
                     output_rows.extend(processed)

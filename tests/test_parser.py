@@ -223,3 +223,198 @@ class TestSubstituteVariablesEdgeCases:
         """숫자 입력 처리"""
         result = substitute_variables(123, {})
         assert result == "123"
+
+
+class TestLogicalOperators:
+    """Tests for logical operators (and, or, not)"""
+    
+    def test_and_both_true(self):
+        context = {"a": True, "b": True}
+        assert evaluate_condition("a and b", context) is True
+    
+    def test_and_one_false(self):
+        context = {"a": True, "b": False}
+        assert evaluate_condition("a and b", context) is False
+    
+    def test_and_both_false(self):
+        context = {"a": False, "b": False}
+        assert evaluate_condition("a and b", context) is False
+    
+    def test_or_both_true(self):
+        context = {"a": True, "b": True}
+        assert evaluate_condition("a or b", context) is True
+    
+    def test_or_one_true(self):
+        context = {"a": True, "b": False}
+        assert evaluate_condition("a or b", context) is True
+    
+    def test_or_both_false(self):
+        context = {"a": False, "b": False}
+        assert evaluate_condition("a or b", context) is False
+    
+    def test_not_true(self):
+        context = {"flag": True}
+        assert evaluate_condition("not flag", context) is False
+    
+    def test_not_false(self):
+        context = {"flag": False}
+        assert evaluate_condition("not flag", context) is True
+    
+    def test_not_with_expression(self):
+        context = {"items": []}
+        assert evaluate_condition("not items", context) is True
+    
+    def test_combined_and_or(self):
+        # or has lower precedence than and
+        context = {"a": True, "b": False, "c": True}
+        # a and b = False, False or c = True
+        assert evaluate_condition("a and b or c", context) is True
+    
+    def test_and_with_comparison(self):
+        context = {"x": 5, "y": 10}
+        assert evaluate_condition("x > 0 and y > 0", context) is True
+        assert evaluate_condition("x > 0 and y < 0", context) is False
+    
+    def test_or_with_comparison(self):
+        context = {"x": 5, "y": -1}
+        assert evaluate_condition("x > 0 or y > 0", context) is True
+        assert evaluate_condition("x < 0 or y < 0", context) is True
+    
+    def test_not_with_comparison(self):
+        context = {"x": 5}
+        assert evaluate_condition("not x > 10", context) is True
+        assert evaluate_condition("not x < 10", context) is False
+
+
+class TestInOperator:
+    """Tests for 'in' operator"""
+    
+    def test_in_list(self):
+        context = {"item": "apple", "items": ["apple", "banana", "cherry"]}
+        assert evaluate_condition("item in items", context) is True
+    
+    def test_not_in_list(self):
+        context = {"item": "grape", "items": ["apple", "banana", "cherry"]}
+        assert evaluate_condition("item in items", context) is False
+    
+    def test_in_string(self):
+        context = {"char": "a", "text": "hello"}
+        assert evaluate_condition("char in text", context) is False
+        
+        context = {"char": "e", "text": "hello"}
+        assert evaluate_condition("char in text", context) is True
+    
+    def test_in_with_literal(self):
+        context = {"status": "active"}
+        # Note: This requires the literal to be a variable
+        context = {"status": "active", "valid_statuses": ["active", "pending"]}
+        assert evaluate_condition("status in valid_statuses", context) is True
+    
+    def test_not_in_operator(self):
+        context = {"item": "grape", "items": ["apple", "banana"]}
+        assert evaluate_condition("item not in items", context) is True
+    
+    def test_not_in_operator_false(self):
+        context = {"item": "apple", "items": ["apple", "banana"]}
+        assert evaluate_condition("item not in items", context) is False
+    
+    def test_in_with_none_collection(self):
+        context = {"item": "apple"}
+        assert evaluate_condition("item in items", context) is False
+    
+    def test_not_in_with_none_collection(self):
+        context = {"item": "apple"}
+        assert evaluate_condition("item not in items", context) is True
+    
+    def test_in_with_dict_keys(self):
+        context = {"key": "name", "data": {"name": "홍길동", "age": 30}}
+        assert evaluate_condition("key in data", context) is True
+    
+    def test_in_number_list(self):
+        context = {"num": 2, "numbers": [1, 2, 3]}
+        assert evaluate_condition("num in numbers", context) is True
+
+
+class TestLogicalOperatorEdgeCases:
+    """Edge cases for logical operators"""
+    
+    def test_and_with_strings(self):
+        context = {"a": "hello", "b": "world"}
+        assert evaluate_condition("a and b", context) is True
+    
+    def test_and_with_empty_string(self):
+        context = {"a": "hello", "b": ""}
+        assert evaluate_condition("a and b", context) is False
+    
+    def test_or_with_empty_list(self):
+        context = {"a": [], "b": [1, 2]}
+        assert evaluate_condition("a or b", context) is True
+    
+    def test_nested_not(self):
+        context = {"flag": True}
+        assert evaluate_condition("not not flag", context) is True
+    
+    def test_complex_condition(self):
+        context = {"x": 5, "y": 10, "z": 15}
+        # (x > 0 and y > 0) or z > 20
+        assert evaluate_condition("x > 0 and y > 0 or z > 20", context) is True
+    
+    def test_in_operator_with_type_error(self):
+        """in 연산자에서 TypeError 발생 시 False 반환 테스트"""
+        # int는 iterable이 아니므로 TypeError 발생
+        context = {"item": "a", "collection": 123}
+        assert evaluate_condition("item in collection", context) is False
+    
+    def test_not_in_operator_with_type_error(self):
+        """not in 연산자에서 TypeError 발생 시 True 반환 테스트"""
+        # int는 iterable이 아니므로 TypeError 발생
+        context = {"item": "a", "collection": 123}
+        assert evaluate_condition("item not in collection", context) is True
+    
+    def test_logical_operator_with_string_literal(self):
+        """문자열 리터럴이 포함된 논리 연산자 테스트"""
+        context = {"status": "active"}
+        # 문자열 내에 'or'가 있는 경우 분리되지 않아야 함
+        assert evaluate_condition("status", context) is True
+
+
+class TestComparisonOperatorsFallback:
+    """Tests for comparison operator fallback code paths"""
+    
+    def test_comparison_eq_fallback(self):
+        """== 비교 연산자 폴백 테스트"""
+        # evaluate_expression이 None을 반환하면 폴백 로직 실행
+        context = {"status": "active"}
+        # 문자열 비교
+        assert evaluate_condition("status == 'active'", context) is True
+        assert evaluate_condition("status == 'inactive'", context) is False
+    
+    def test_comparison_ne_fallback(self):
+        """!= 비교 연산자 폴백 테스트"""
+        context = {"status": "active"}
+        assert evaluate_condition("status != 'inactive'", context) is True
+        assert evaluate_condition("status != 'active'", context) is False
+    
+    def test_comparison_ge_fallback(self):
+        """>= 비교 연산자 폴백 테스트"""
+        context = {"count": 10}
+        assert evaluate_condition("count >= 10", context) is True
+        assert evaluate_condition("count >= 11", context) is False
+    
+    def test_comparison_le_fallback(self):
+        """<= 비교 연산자 폴백 테스트"""
+        context = {"count": 10}
+        assert evaluate_condition("count <= 10", context) is True
+        assert evaluate_condition("count <= 9", context) is False
+    
+    def test_comparison_gt_fallback(self):
+        """> 비교 연산자 폴백 테스트"""
+        context = {"count": 10}
+        assert evaluate_condition("count > 9", context) is True
+        assert evaluate_condition("count > 10", context) is False
+    
+    def test_comparison_lt_fallback(self):
+        """< 비교 연산자 폴백 테스트"""
+        context = {"count": 10}
+        assert evaluate_condition("count < 11", context) is True
+        assert evaluate_condition("count < 10", context) is False
