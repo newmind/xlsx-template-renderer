@@ -788,3 +788,260 @@ class TestRichTextPreservation:
             os.unlink(template_path)
             if os.path.exists(output_path):
                 os.unlink(output_path)
+
+
+class TestEdgeCases:
+    """Tests for edge cases and error handling"""
+    
+    def test_empty_sheet(self):
+        """빈 시트 처리 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        # 빈 시트 - 아무 셀도 설정하지 않음
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {"data": "test"})
+            result = read_output(output_path)
+            assert result == []
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_missing_endfor(self):
+        """endfor 없는 for 루프 오류 테스트"""
+        template_path = create_template([
+            ["{% for item in items %}"],
+            ["{{ item }}"]
+            # endfor 없음
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            with pytest.raises(TemplateSyntaxError) as exc_info:
+                render_template(template_path, output_path, {"items": [1, 2, 3]})
+            assert "endfor" in str(exc_info.value).lower()
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_missing_endif(self):
+        """endif 없는 if 문 오류 테스트"""
+        template_path = create_template([
+            ["{% if show %}"],
+            ["표시됨"]
+            # endif 없음
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            with pytest.raises(TemplateSyntaxError) as exc_info:
+                render_template(template_path, output_path, {"show": True})
+            assert "endif" in str(exc_info.value).lower()
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_unknown_control_statement(self):
+        """알 수 없는 control statement 무시 테스트"""
+        template_path = create_template([
+            ["{% unknown_statement %}"],
+            ["일반 행"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {})
+            result = read_output(output_path)
+            # 알 수 없는 control statement는 무시됨
+            assert result == [["일반 행"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_orphan_endfor(self):
+        """고아 endfor 처리 테스트"""
+        template_path = create_template([
+            ["일반 행"],
+            ["{% endfor %}"],
+            ["또 다른 행"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {})
+            result = read_output(output_path)
+            # 고아 endfor는 무시됨
+            assert result == [["일반 행"], ["또 다른 행"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_orphan_endif(self):
+        """고아 endif 처리 테스트"""
+        template_path = create_template([
+            ["일반 행"],
+            ["{% endif %}"],
+            ["또 다른 행"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {})
+            result = read_output(output_path)
+            # 고아 endif는 무시됨
+            assert result == [["일반 행"], ["또 다른 행"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_orphan_elif(self):
+        """고아 elif 처리 테스트"""
+        template_path = create_template([
+            ["일반 행"],
+            ["{% elif condition %}"],
+            ["또 다른 행"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {"condition": True})
+            result = read_output(output_path)
+            # 고아 elif는 무시됨
+            assert result == [["일반 행"], ["또 다른 행"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_orphan_else(self):
+        """고아 else 처리 테스트"""
+        template_path = create_template([
+            ["일반 행"],
+            ["{% else %}"],
+            ["또 다른 행"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {})
+            result = read_output(output_path)
+            # 고아 else는 무시됨
+            assert result == [["일반 행"], ["또 다른 행"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_none_iterable_in_for_loop(self):
+        """None iterable 처리 테스트"""
+        template_path = create_template([
+            ["{% for item in items %}"],
+            ["{{ item }}"],
+            ["{% endfor %}"],
+            ["Footer"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            # items가 context에 없음 -> None -> 빈 리스트로 처리
+            render_template(template_path, output_path, {})
+            result = read_output(output_path)
+            assert result == [["Footer"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_multiple_sheets(self):
+        """여러 시트 처리 테스트"""
+        wb = Workbook()
+        ws1 = wb.active
+        ws1.title = "Sheet1"
+        ws1['A1'] = "{{ name }}"
+        
+        ws2 = wb.create_sheet("Sheet2")
+        ws2['A1'] = "{{ title }}"
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {"name": "홍길동", "title": "제목"})
+            
+            wb_out = load_workbook(output_path)
+            assert wb_out["Sheet1"]['A1'].value == "홍길동"
+            assert wb_out["Sheet2"]['A1'].value == "제목"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_comparison_with_none_values(self):
+        """None 값 비교 조건 테스트"""
+        template_path = create_template([
+            ["{% if value > 0 %}"],
+            ["양수"],
+            ["{% endif %}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            # value가 없으면 None, 비교 실패 -> False
+            render_template(template_path, output_path, {})
+            result = read_output(output_path)
+            assert result == []
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_greater_equal_condition(self):
+        """>=  조건 테스트"""
+        template_path = create_template([
+            ["{% if count >= 5 %}"],
+            ["5 이상"],
+            ["{% endif %}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {"count": 5})
+            result = read_output(output_path)
+            assert result == [["5 이상"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_less_equal_condition(self):
+        """<= 조건 테스트"""
+        template_path = create_template([
+            ["{% if count <= 5 %}"],
+            ["5 이하"],
+            ["{% endif %}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {"count": 5})
+            result = read_output(output_path)
+            assert result == [["5 이하"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)

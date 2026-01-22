@@ -169,3 +169,57 @@ class TestEvaluateCondition:
     def test_comparison_not_equal(self):
         assert evaluate_condition("status != 0", {"status": 1}) is True
         assert evaluate_condition("status != 0", {"status": 0}) is False
+    
+    def test_comparison_greater_equal(self):
+        assert evaluate_condition("count >= 5", {"count": 5}) is True
+        assert evaluate_condition("count >= 5", {"count": 4}) is False
+    
+    def test_comparison_less_equal(self):
+        assert evaluate_condition("count <= 5", {"count": 5}) is True
+        assert evaluate_condition("count <= 5", {"count": 6}) is False
+    
+    def test_comparison_with_none(self):
+        """None 값 비교 테스트"""
+        assert evaluate_condition("unknown > 0", {}) is False
+        assert evaluate_condition("value > unknown", {"value": 5}) is False
+    
+    def test_failed_evaluation_returns_false(self):
+        """평가 실패 시 False 반환 테스트"""
+        # 알 수 없는 변수만 있는 경우
+        assert evaluate_condition("unknown_var", {}) is False
+
+
+class TestUnknownControlStatement:
+    """Tests for unknown control statements"""
+    
+    def test_unknown_statement_returns_none(self):
+        """알 수 없는 control statement는 None 반환"""
+        token = parse_cell("{% unknown_statement %}")
+        assert token is None
+    
+    def test_malformed_for_returns_none(self):
+        """잘못된 형식의 for문은 None 반환"""
+        token = parse_cell("{% for item %}")  # 'in' 없음
+        assert token is None
+    
+    def test_whitespace_in_control_statement(self):
+        """공백이 포함된 control statement 처리"""
+        token = parse_cell("{%   for   item   in   items   %}")
+        assert token is not None
+        assert token.type == TokenType.FOR_START
+        assert token.loop_var == "item"
+        assert token.loop_iter == "items"
+
+
+class TestSubstituteVariablesEdgeCases:
+    """Edge case tests for substitute_variables"""
+    
+    def test_none_input(self):
+        """None 입력 처리"""
+        result = substitute_variables(None, {"name": "test"})
+        assert result == ""
+    
+    def test_numeric_input(self):
+        """숫자 입력 처리"""
+        result = substitute_variables(123, {})
+        assert result == "123"
