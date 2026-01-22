@@ -2,7 +2,7 @@
 예제: Rich Text 및 복잡한 서식을 포함한 고급 템플릿 사용법
 
 새로 추가된 기능 테스트:
-- 필터: default, length, join
+- 필터: default, length, join, upper, lower, title, trim, replace, round, abs, int, float, first, last
 - 삼항 연산자: {{ 'A' if condition else 'B' }}
 - 논리 연산자: and, or, not
 - in 연산자: {% if item in items %}
@@ -183,6 +183,30 @@ def create_advanced_template():
     ws['A30'].font = Font(italic=True, color="888888")
     ws['A31'] = "{% endif %}"
     
+    # === 새 필터 테스트 섹션 ===
+    ws['A32'] = "=== 새 필터 테스트 ==="
+    ws['A32'].font = Font(bold=True, size=12)
+    
+    # 문자열 필터 테스트
+    ws['A33'] = "upper: {{ test_name|upper }}"
+    ws['A34'] = "lower: {{ test_name|lower }}"
+    ws['A35'] = "title: {{ test_title_text|title }}"
+    ws['A36'] = "trim: [{{ test_spaces|trim }}]"
+    ws['A37'] = "replace: {{ test_replace|replace('world', 'Korea') }}"
+    
+    # 숫자 필터 테스트
+    ws['A38'] = "round: {{ test_float|round(2) }}"
+    ws['A39'] = "abs: {{ test_negative|abs }}"
+    ws['A40'] = "int: {{ test_float|int }}"
+    ws['A41'] = "float: {{ test_int_str|float }}"
+    
+    # 리스트 필터 테스트
+    ws['A42'] = "first: {{ test_list|first }}"
+    ws['A43'] = "last: {{ test_list|last }}"
+    
+    # 필터 체이닝 테스트
+    ws['A44'] = "chained: {{ test_spaces|trim|upper }}"
+    
     # 열 너비 조정
     ws.column_dimensions['A'].width = 20
     ws.column_dimensions['B'].width = 8
@@ -219,6 +243,16 @@ def main():
         # [NEW] or 연산자 테스트용
         "show_footer": True,
         "debug_mode": False,
+        
+        # [NEW] 새 필터 테스트용 데이터
+        "test_name": "Hello World",
+        "test_title_text": "hello world example",
+        "test_spaces": "  trimmed  ",
+        "test_replace": "hello world",
+        "test_float": 3.14159,
+        "test_negative": -42,
+        "test_int_str": "123",
+        "test_list": ["apple", "banana", "cherry"],
         
         "departments": [
             {
@@ -268,7 +302,7 @@ def main():
     print("=" * 60)
     
     print("\n📋 테스트된 새 기능:")
-    print("  - 필터: default, length, join")
+    print("  - 필터: default, length, join, upper, lower, title, trim, replace, round, abs, int, float, first, last")
     print("  - 삼항 연산자: {{ 'A' if condition else 'B' }}")
     print("  - 논리 연산자: and, or, not")
     print("  - in 연산자: {% if item in items %}")
@@ -350,15 +384,59 @@ def main():
             # 11. default 필터 (계산 중) 검증
             if "계산 중" in cell_str and "default_avg" not in checks:
                 checks["default_avg"] = "✅ default 필터: '계산 중' 출력됨 (avg_salary)"
+            
+            # 12. upper 필터 검증
+            if "HELLO WORLD" in cell_str and "upper" not in checks:
+                checks["upper"] = "✅ upper 필터: 대문자 변환됨"
+            
+            # 13. lower 필터 검증
+            if "hello world" in cell_str and "lower" not in cell_str and "lower" not in checks:
+                checks["lower"] = "✅ lower 필터: 소문자 변환됨"
+            
+            # 14. title 필터 검증
+            if "Hello World Example" in cell_str and "title" not in checks:
+                checks["title"] = "✅ title 필터: 제목 케이스 변환됨"
+            
+            # 15. trim 필터 검증
+            if "[trimmed]" in cell_str and "trim" not in checks:
+                checks["trim"] = "✅ trim 필터: 공백 제거됨"
+            
+            # 16. replace 필터 검증
+            if "hello Korea" in cell_str and "replace" not in checks:
+                checks["replace"] = "✅ replace 필터: 문자열 치환됨"
+            
+            # 17. round 필터 검증
+            if "3.14" in cell_str and "round" not in checks:
+                checks["round"] = "✅ round 필터: 반올림됨"
+            
+            # 18. abs 필터 검증
+            if "abs: 42" in cell_str and "abs" not in checks:
+                checks["abs"] = "✅ abs 필터: 절대값 변환됨"
+            
+            # 19. int 필터 검증
+            if "int: 3" in cell_str and "int" not in checks:
+                checks["int"] = "✅ int 필터: 정수 변환됨"
+            
+            # 20. first 필터 검증
+            if "first: apple" in cell_str and "first" not in checks:
+                checks["first"] = "✅ first 필터: 첫 번째 요소"
+            
+            # 21. last 필터 검증
+            if "last: cherry" in cell_str and "last" not in checks:
+                checks["last"] = "✅ last 필터: 마지막 요소"
+            
+            # 22. 필터 체이닝 검증
+            if "chained: TRIMMED" in cell_str and "chained" not in checks:
+                checks["chained"] = "✅ 필터 체이닝: trim|upper 작동"
     
     for check in checks.values():
         print(f"  {check}")
     
     total_checks = len(checks)
-    if total_checks >= 8:
+    if total_checks >= 18:
         print(f"\n🎉 모든 새 기능이 정상 작동합니다! ({total_checks}개 검증 통과)")
     else:
-        print(f"\n⚠️ 일부 기능 검증 필요 ({total_checks}/11 통과)")
+        print(f"\n⚠️ 일부 기능 검증 필요 ({total_checks}/22 통과)")
 
 
 if __name__ == "__main__":

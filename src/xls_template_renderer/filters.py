@@ -60,12 +60,171 @@ def filter_join(value: Any, separator: str = '') -> str:
     return separator.join(str(item) for item in value)
 
 
+# === String Filters ===
+
+@register_filter('upper')
+def filter_upper(value: Any) -> str:
+    """
+    Convert string to uppercase.
+    
+    Usage: {{ name|upper }}
+    """
+    if value is None:
+        return ''
+    return str(value).upper()
+
+
+@register_filter('lower')
+def filter_lower(value: Any) -> str:
+    """
+    Convert string to lowercase.
+    
+    Usage: {{ name|lower }}
+    """
+    if value is None:
+        return ''
+    return str(value).lower()
+
+
+@register_filter('title')
+def filter_title(value: Any) -> str:
+    """
+    Convert string to title case.
+    
+    Usage: {{ name|title }}
+    """
+    if value is None:
+        return ''
+    return str(value).title()
+
+
+@register_filter('trim')
+def filter_trim(value: Any) -> str:
+    """
+    Remove leading and trailing whitespace.
+    
+    Usage: {{ text|trim }}
+    """
+    if value is None:
+        return ''
+    return str(value).strip()
+
+
+@register_filter('replace')
+def filter_replace(value: Any, old: str, new: str) -> str:
+    """
+    Replace occurrences of old with new.
+    
+    Usage: {{ text|replace('a', 'b') }}
+    """
+    if value is None:
+        return ''
+    return str(value).replace(old, new)
+
+
+# === Number Filters ===
+
+@register_filter('round')
+def filter_round(value: Any, precision: int = 0) -> float:
+    """
+    Round a number to a given precision.
+    
+    Usage: {{ price|round }} or {{ price|round(2) }}
+    """
+    if value is None:
+        return 0.0
+    try:
+        return round(float(value), precision)
+    except (ValueError, TypeError):
+        return 0.0
+
+
+@register_filter('abs')
+def filter_abs(value: Any) -> Any:
+    """
+    Return the absolute value.
+    
+    Usage: {{ value|abs }}
+    """
+    if value is None:
+        return 0
+    try:
+        return abs(value)
+    except TypeError:
+        try:
+            return abs(float(value))
+        except (ValueError, TypeError):
+            return 0
+
+
+@register_filter('int')
+def filter_int(value: Any, default: int = 0) -> int:
+    """
+    Convert value to integer.
+    
+    Usage: {{ num|int }}
+    """
+    if value is None:
+        return default
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        return default
+
+
+@register_filter('float')
+def filter_float(value: Any, default: float = 0.0) -> float:
+    """
+    Convert value to float.
+    
+    Usage: {{ num|float }}
+    """
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return default
+
+
+# === List Filters ===
+
+@register_filter('first')
+def filter_first(value: Any) -> Any:
+    """
+    Return the first element of a sequence.
+    
+    Usage: {{ items|first }}
+    """
+    if value is None:
+        return None
+    try:
+        return value[0] if len(value) > 0 else None
+    except (TypeError, KeyError):
+        return None
+
+
+@register_filter('last')
+def filter_last(value: Any) -> Any:
+    """
+    Return the last element of a sequence.
+    
+    Usage: {{ items|last }}
+    """
+    if value is None:
+        return None
+    try:
+        return value[-1] if len(value) > 0 else None
+    except (TypeError, KeyError):
+        return None
+
+
 def get_filter(name: str) -> Optional[Callable]:
     """Get a filter function by name."""
     return FILTERS.get(name)
 
 
-def apply_filter(value: Any, filter_name: str, args: List[Any] = None) -> Any:
+def apply_filter(value: Any, filter_name: str, args: Optional[List[Any]] = None) -> Any:
     """
     Apply a filter to a value.
     

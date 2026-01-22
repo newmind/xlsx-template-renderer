@@ -135,15 +135,44 @@ for 루프 내에서 `loop` 객체를 통해 현재 반복 상태에 접근할 �
 
 필터는 `|` 기호를 사용하여 값을 변환합니다.
 
+#### 기본 필터
+
 | 필터 | 설명 | 예시 |
 |------|------|------|
 | `default(값)` | None일 때 기본값 반환 | `{{ value\|default('N/A') }}` |
 | `length` | 길이 반환 | `{{ items\|length }}` |
 | `join(구분자)` | 리스트를 문자열로 연결 | `{{ items\|join(', ') }}` |
 
+#### 문자열 필터
+
+| 필터 | 설명 | 예시 |
+|------|------|------|
+| `upper` | 대문자 변환 | `{{ name\|upper }}` → `HELLO` |
+| `lower` | 소문자 변환 | `{{ name\|lower }}` → `hello` |
+| `title` | 제목 케이스 변환 | `{{ name\|title }}` → `Hello World` |
+| `trim` | 앞뒤 공백 제거 | `{{ text\|trim }}` |
+| `replace(old, new)` | 문자열 치환 | `{{ text\|replace('a', 'b') }}` |
+
+#### 숫자 필터
+
+| 필터 | 설명 | 예시 |
+|------|------|------|
+| `round(정밀도)` | 반올림 (기본 0자리) | `{{ price\|round(2) }}` → `3.14` |
+| `abs` | 절대값 | `{{ value\|abs }}` → `5` (from -5) |
+| `int` | 정수 변환 | `{{ num\|int }}` → `3` (from 3.7) |
+| `float` | 실수 변환 | `{{ num\|float }}` → `3.0` |
+
+#### 리스트 필터
+
+| 필터 | 설명 | 예시 |
+|------|------|------|
+| `first` | 첫 번째 요소 | `{{ items\|first }}` |
+| `last` | 마지막 요소 | `{{ items\|last }}` |
+
 **필터 체이닝:**
 ```
 {{ value|default('')|length }}
+{{ name|trim|upper }}
 ```
 
 ### 삼항 연산자 (Ternary)

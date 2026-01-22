@@ -61,12 +61,12 @@ pytest
 
 ### 필터 (Filters)
 - [x] 기본값 필터: `{{ value|default('N/A') }}`
-- [x] 리스트 필터: `{{ items|length }}`, `{{ items|join(',') }}`
+- [x] 리스트 필터: `{{ items|length }}`, `{{ items|join(',') }}`, `{{ items|first }}`, `{{ items|last }}`
 - [x] 필터 체이닝: `{{ value|default('')|length }}`
-- [ ] 기본 필터: `{{ name|upper }}`, `{{ name|lower }}`, `{{ name|title }}`
-- [ ] 숫자 필터: `{{ price|round }}`, `{{ value|abs }}`, `{{ num|int }}`, `{{ num|float }}`
-- [ ] 리스트 필터: `{{ items|first }}`, `{{ items|last }}`
-- [ ] 문자열 필터: `{{ text|trim }}`, `{{ text|truncate(50) }}`, `{{ text|replace('a', 'b') }}`
+- [x] 기본 필터: `{{ name|upper }}`, `{{ name|lower }}`, `{{ name|title }}`
+- [x] 숫자 필터: `{{ price|round }}`, `{{ value|abs }}`, `{{ num|int }}`, `{{ num|float }}`
+- [x] 문자열 필터: `{{ text|trim }}`, `{{ text|replace('a', 'b') }}`
+- [ ] 문자열 필터: `{{ text|truncate(50) }}`
 - [ ] 날짜 필터: `{{ date|date('Y-m-d') }}`
 
 ### 테스트 (Tests)
