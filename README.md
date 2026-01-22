@@ -52,3 +52,44 @@ render_template("template.xlsx", "output.xlsx", data)
 ```bash
 pytest
 ```
+
+## TODO: Jinja2 대비 미지원 기능
+
+### 필터 (Filters)
+- [ ] 기본 필터: `{{ name|upper }}`, `{{ name|lower }}`, `{{ name|title }}`
+- [ ] 숫자 필터: `{{ price|round }}`, `{{ value|abs }}`, `{{ num|int }}`, `{{ num|float }}`
+- [ ] 리스트 필터: `{{ items|length }}`, `{{ items|first }}`, `{{ items|last }}`, `{{ items|join(',') }}`
+- [ ] 문자열 필터: `{{ text|trim }}`, `{{ text|truncate(50) }}`, `{{ text|replace('a', 'b') }}`
+- [ ] 날짜 필터: `{{ date|date('Y-m-d') }}`
+- [ ] 기본값 필터: `{{ value|default('N/A') }}`
+- [ ] 필터 체이닝: `{{ name|lower|trim }}`
+
+### 테스트 (Tests)
+- [ ] `{% if items is defined %}`
+- [ ] `{% if value is none %}`
+- [ ] `{% if num is odd %}`, `{% if num is even %}`
+- [ ] `{% if value is string %}`, `{% if value is number %}`
+
+### 논리 연산자
+- [ ] `and`, `or`: `{% if a and b %}`, `{% if a or b %}`
+- [ ] `not`: `{% if not condition %}`
+- [ ] `in`: `{% if item in items %}`
+- [ ] 괄호 그룹핑: `{% if (a or b) and c %}`
+
+### 루프 변수
+- [ ] `loop.index` (1부터 시작하는 인덱스)
+- [ ] `loop.index0` (0부터 시작하는 인덱스)
+- [ ] `loop.first`, `loop.last`
+- [ ] `loop.length`
+
+### 기타 제어문
+- [ ] `{% set var = value %}` (변수 할당)
+- [ ] `{% macro %}...{% endmacro %}` (매크로)
+- [ ] `{% include %}` (템플릿 포함)
+- [ ] `{% block %}...{% endblock %}` (블록 상속)
+
+### 표현식
+- [ ] 삼항 연산자: `{{ 'yes' if condition else 'no' }}`
+- [ ] 나머지 연산: `{{ value % 2 }}`
+- [ ] 거듭제곱: `{{ value ** 2 }}`
+- [ ] 문자열 키 접근: `{{ dict['key-name'] }}`
