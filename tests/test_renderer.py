@@ -1589,3 +1589,178 @@ class TestRendererEdgeCases:
         
         # 알 수 없는 타입도 그대로 유지되어야 함
         assert 123 in result
+
+
+class TestControlStatementStyles:
+    """제어문의 스타일 처리 테스트"""
+    
+    def test_control_statement_with_styles_preserved_during_parsing(self):
+        """제어문이 있는 셀의 스타일이 파싱 과정에서 보존되는지 테스트"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            template_path = Path(temp_dir) / "template_control_styles.xlsx"
+            output_path = Path(temp_dir) / "output_control_styles.xlsx"
+            
+            # 템플릿 생성
+            wb = Workbook()
+            ws = wb.active
+            
+            # 제어문에 스타일 적용
+            ws['A1'] = "  {% for item in items %}"  # 들여쓰기 포함
+            ws['A1'].fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+            ws['A1'].font = Font(color="FF0000", bold=True)
+            
+            # 데이터 행
+            ws['A2'] = "{{ item.name }}"
+            ws['B2'] = "{{ item.value }}"
+            
+            # 종료 제어문
+            ws['A3'] = "    {% endfor %}"  # 더 많은 들여쓰기
+            ws['A3'].fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+            ws['A3'].font = Font(color="0000FF", italic=True)
+            
+            wb.save(template_path)
+            
+            # 테스트 데이터
+            data = {
+                'items': [
+                    {'name': '아이템1', 'value': 100},
+                    {'name': '아이템2', 'value': 200}
+                ]
+            }
+            
+            # 렌더링 실행
+            render_template(str(template_path), str(output_path), data)
+            
+            # 결과 확인 - 제어문 행들은 삭제되고 데이터만 남아야 함
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 예상 결과: 2개 아이템이 2행에 걸쳐 출력
+            assert ws_out['A1'].value == '아이템1'
+            assert ws_out['B1'].value == 100
+            assert ws_out['A2'].value == '아이템2'
+            assert ws_out['B2'].value == 200
+            
+            # 제어문 행들은 삭제되었으므로 3행째는 비어있어야 함
+            assert ws_out['A3'].value is None
+    
+    def test_indented_control_statements_parsing(self):
+        """다양한 들여쓰기가 있는 제어문들이 정상적으로 파싱되는지 테스트"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            template_path = Path(temp_dir) / "template_indented.xlsx"
+            output_path = Path(temp_dir) / "output_indented.xlsx"
+            
+            wb = Workbook()
+            ws = wb.active
+            
+            # 중첩된 제어문들을 들여쓰기로 표현
+            ws['A1'] = "{% for dept in departments %}"
+            ws['A2'] = "  {% for emp in dept.employees %}"
+            ws['A3'] = "    {% if emp.active %}"
+            ws['A4'] = "{{ dept.name }}: {{ emp.name }}"
+            ws['A5'] = "    {% endif %}"
+            ws['A6'] = "  {% endfor %}"
+            ws['A7'] = "{% endfor %}"
+            
+            wb.save(template_path)
+            
+            # 테스트 데이터
+            data = {
+                'departments': [
+                    {
+                        'name': '개발팀',
+                        'employees': [
+                            {'name': '김개발', 'active': True},
+                            {'name': '이비활성', 'active': False},
+                            {'name': '박활성', 'active': True}
+                        ]
+                    },
+                    {
+                        'name': '디자인팀', 
+                        'employees': [
+                            {'name': '최디자인', 'active': True}
+                        ]
+                    }
+                ]
+            }
+            
+            # 렌더링 실행
+            render_template(str(template_path), str(output_path), data)
+            
+            # 결과 확인
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # active=True인 직원들만 출력되어야 함
+            expected_results = [
+                '개발팀: 김개발',
+                '개발팀: 박활성', 
+                '디자인팀: 최디자인'
+            ]
+            
+            for i, expected in enumerate(expected_results, 1):
+                assert ws_out[f'A{i}'].value == expected
+    
+    def test_control_statements_with_rainbow_bracket_style(self):
+        """레인보우 브라켓 스타일의 제어문 색상 구분 테스트"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            template_path = Path(temp_dir) / "template_rainbow.xlsx"
+            output_path = Path(temp_dir) / "output_rainbow.xlsx"
+            
+            wb = Workbook()
+            ws = wb.active
+            
+            # 레인보우 브라켓 스타일로 색상 구분
+            # for문 - 노란색
+            ws['A1'] = "{% for item in items %}"
+            ws['A1'].fill = PatternFill(start_color="FFFF00", fill_type="solid")
+            ws['A1'].font = Font(bold=True)
+            
+            # if문 - 파란색  
+            ws['A2'] = "  {% if item.important %}"
+            ws['A2'].fill = PatternFill(start_color="0000FF", fill_type="solid")
+            ws['A2'].font = Font(color="FFFFFF", bold=True)
+            
+            # 데이터
+            ws['A3'] = "중요: {{ item.name }}"
+            
+            # else문 - 초록색
+            ws['A4'] = "  {% else %}"
+            ws['A4'].fill = PatternFill(start_color="00FF00", fill_type="solid")
+            ws['A4'].font = Font(bold=True)
+            
+            # 데이터
+            ws['A5'] = "일반: {{ item.name }}"
+            
+            # 종료문들 - 연한 회색
+            ws['A6'] = "  {% endif %}"
+            ws['A6'].fill = PatternFill(start_color="CCCCCC", fill_type="solid")
+            ws['A6'].font = Font(italic=True)
+            
+            ws['A7'] = "{% endfor %}"
+            ws['A7'].fill = PatternFill(start_color="CCCCCC", fill_type="solid")
+            ws['A7'].font = Font(italic=True)
+            
+            wb.save(template_path)
+            
+            # 테스트 데이터
+            data = {
+                'items': [
+                    {'name': '중요한일', 'important': True},
+                    {'name': '일반업무', 'important': False}
+                ]
+            }
+            
+            # 렌더링 실행
+            render_template(str(template_path), str(output_path), data)
+            
+            # 결과 확인
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 조건에 따라 다른 출력이 나와야 함
+            assert ws_out['A1'].value == '중요: 중요한일'
+            assert ws_out['A2'].value == '일반: 일반업무'
+            
+            # 3행째는 비어있어야 함 (제어문들이 삭제됨)
+            assert ws_out['A3'].value is None

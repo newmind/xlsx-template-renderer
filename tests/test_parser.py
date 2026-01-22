@@ -83,6 +83,52 @@ class TestParseCell:
     
     def test_none_input(self):
         assert parse_cell(None) is None
+    
+    def test_control_statement_with_indentation(self):
+        """들여쓰기가 있는 제어문 파싱 테스트"""
+        test_cases = [
+            ("{% for item in items %}", True),           # 공백 없음
+            ("  {% for item in items %}", True),         # 앞쪽 2칸 공백
+            ("    {% for item in items %}", True),       # 앞쪽 4칸 공백  
+            ("\t{% for item in items %}", True),         # 앞쪽 탭
+            ("  \t{% for item in items %}", True),       # 공백+탭 조합
+            ("{% for item in items %}  ", True),         # 뒤쪽 공백
+            ("  {% for item in items %}  ", True),       # 앞뒤 공백
+        ]
+        
+        for test_input, should_parse in test_cases:
+            # 제어문으로 인식되는지 확인
+            is_control = is_control_statement(test_input)
+            assert is_control == should_parse, f"Failed for: '{test_input}'"
+            
+            # 파싱 결과 확인
+            token = parse_cell(test_input)
+            if should_parse:
+                assert token is not None, f"Failed to parse: '{test_input}'"
+                assert token.type == TokenType.FOR_START
+                assert token.loop_var == "item"
+                assert token.loop_iter == "items"
+            else:
+                assert token is None, f"Should not parse: '{test_input}'"
+    
+    def test_if_statement_with_indentation(self):
+        """들여쓰기가 있는 if문 파싱 테스트"""
+        test_cases = [
+            "{% if condition %}",
+            "  {% if condition %}",
+            "\t{% if condition %}",
+            "    {% elif other_condition %}",
+            "\t{% else %}",
+            "  {% endif %}",
+        ]
+        
+        for test_input in test_cases:
+            is_control = is_control_statement(test_input)
+            assert is_control, f"Should recognize as control: '{test_input}'"
+            
+            token = parse_cell(test_input)
+            assert token is not None, f"Should parse: '{test_input}'"
+            assert token.type in [TokenType.IF_START, TokenType.ELIF, TokenType.ELSE, TokenType.IF_END]
 
 
 class TestIsControlStatement:
@@ -209,6 +255,52 @@ class TestUnknownControlStatement:
         assert token.type == TokenType.FOR_START
         assert token.loop_var == "item"
         assert token.loop_iter == "items"
+    
+    def test_control_statement_with_indentation(self):
+        """들여쓰기가 있는 제어문 파싱 테스트"""
+        test_cases = [
+            ("{% for item in items %}", True),           # 공백 없음
+            ("  {% for item in items %}", True),         # 앞쪽 2칸 공백
+            ("    {% for item in items %}", True),       # 앞쪽 4칸 공백  
+            ("\t{% for item in items %}", True),         # 앞쪽 탭
+            ("  \t{% for item in items %}", True),       # 공백+탭 조합
+            ("{% for item in items %}  ", True),         # 뒤쪽 공백
+            ("  {% for item in items %}  ", True),       # 앞뒤 공백
+        ]
+        
+        for test_input, should_parse in test_cases:
+            # 제어문으로 인식되는지 확인
+            is_control = is_control_statement(test_input)
+            assert is_control == should_parse, f"Failed for: '{test_input}'"
+            
+            # 파싱 결과 확인
+            token = parse_cell(test_input)
+            if should_parse:
+                assert token is not None, f"Failed to parse: '{test_input}'"
+                assert token.type == TokenType.FOR_START
+                assert token.loop_var == "item"
+                assert token.loop_iter == "items"
+            else:
+                assert token is None, f"Should not parse: '{test_input}'"
+    
+    def test_if_statement_with_indentation(self):
+        """들여쓰기가 있는 if문 파싱 테스트"""
+        test_cases = [
+            "{% if condition %}",
+            "  {% if condition %}",
+            "\t{% if condition %}",
+            "    {% elif other_condition %}",
+            "\t{% else %}",
+            "  {% endif %}",
+        ]
+        
+        for test_input in test_cases:
+            is_control = is_control_statement(test_input)
+            assert is_control, f"Should recognize as control: '{test_input}'"
+            
+            token = parse_cell(test_input)
+            assert token is not None, f"Should parse: '{test_input}'"
+            assert token.type in [TokenType.IF_START, TokenType.ELIF, TokenType.ELSE, TokenType.IF_END]
 
 
 class TestSubstituteVariablesEdgeCases:
