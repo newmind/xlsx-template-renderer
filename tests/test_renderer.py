@@ -9,8 +9,8 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.cell.rich_text import CellRichText, TextBlock
 from openpyxl.cell.text import InlineFont
 
-from xls_template_renderer import render_template
-from xls_template_renderer.exceptions import TemplateSyntaxError
+from xlsx_template_renderer import render_template
+from xlsx_template_renderer.exceptions import TemplateSyntaxError
 
 
 def create_template(rows_data: list) -> str:
@@ -1384,7 +1384,7 @@ class TestRendererEdgeCases:
     
     def test_loop_context_repr(self):
         """LoopContext __repr__ 테스트"""
-        from xls_template_renderer.renderer import LoopContext
+        from xlsx_template_renderer.renderer import LoopContext
         
         loop = LoopContext(0, 3)
         repr_str = repr(loop)
@@ -1539,7 +1539,7 @@ class TestRendererEdgeCases:
     
     def test_process_rich_text_with_plain_string(self):
         """_process_rich_text_value 함수에서 plain string 파트 처리 테스트"""
-        from xls_template_renderer.renderer import _process_rich_text_value
+        from xlsx_template_renderer.renderer import _process_rich_text_value
         
         # CellRichText에 plain string과 TextBlock 혼합
         rich_text = CellRichText(
@@ -1557,7 +1557,7 @@ class TestRendererEdgeCases:
     
     def test_process_rich_text_plain_string_no_variable(self):
         """_process_rich_text_value: plain string 파트에 변수가 없는 경우"""
-        from xls_template_renderer.renderer import _process_rich_text_value
+        from xlsx_template_renderer.renderer import _process_rich_text_value
         
         rich_text = CellRichText(
             "Plain text without variable",  # no variable
@@ -1573,7 +1573,7 @@ class TestRendererEdgeCases:
     
     def test_process_rich_text_unknown_type(self):
         """_process_rich_text_value: 알 수 없는 타입 처리"""
-        from xls_template_renderer.renderer import _process_rich_text_value
+        from xlsx_template_renderer.renderer import _process_rich_text_value
         
         # CellRichText를 직접 생성하고 알 수 없는 타입 추가
         # 실제로 CellRichText는 str과 TextBlock만 지원하지만,

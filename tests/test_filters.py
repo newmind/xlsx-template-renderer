@@ -1,7 +1,7 @@
 """Tests for filter functions"""
 
 import pytest
-from xls_template_renderer.filters import (
+from xlsx_template_renderer.filters import (
     filter_default,
     filter_length,
     filter_join,

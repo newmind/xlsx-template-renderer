@@ -1,7 +1,7 @@
 """Tests for expression evaluator"""
 
 import pytest
-from xls_template_renderer.expressions import (
+from xlsx_template_renderer.expressions import (
     evaluate_expression,
     resolve_path,
     ExpressionEvaluator

@@ -6,7 +6,7 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 
-from xls_template_renderer import render_template
+from xlsx_template_renderer import render_template
 
 
 def create_sample_template():

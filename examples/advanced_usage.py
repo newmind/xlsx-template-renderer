@@ -15,7 +15,7 @@ from openpyxl.styles import Font, PatternFill, Border, Side, Alignment  # type: 
 from openpyxl.cell.rich_text import CellRichText, TextBlock  # type: ignore[import-untyped]
 from openpyxl.cell.text import InlineFont  # type: ignore[import-untyped]
 
-from xls_template_renderer import render_template
+from xlsx_template_renderer import render_template
 
 
 def create_advanced_template():

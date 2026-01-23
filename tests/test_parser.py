@@ -1,7 +1,7 @@
 """Tests for template parser"""
 
 import pytest
-from xls_template_renderer.parser import (
+from xlsx_template_renderer.parser import (
     parse_cell,
     is_control_statement,
     extract_variables,
