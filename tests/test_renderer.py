@@ -1764,3 +1764,105 @@ class TestControlStatementStyles:
             
             # 3행째는 비어있어야 함 (제어문들이 삭제됨)
             assert ws_out['A3'].value is None
+
+
+class TestSheetFiltering:
+    """Tests for sheets parameter filtering"""
+    
+    def test_sheets_filter_specific_sheets(self):
+        """특정 시트만 처리되는지 테스트"""
+        wb = Workbook()
+        ws1 = wb.active
+        ws1.title = "Sheet1"
+        ws1['A1'] = "{{ value1 }}"
+        
+        ws2 = wb.create_sheet("Sheet2")
+        ws2['A1'] = "{{ value2 }}"
+        
+        ws3 = wb.create_sheet("Sheet3")
+        ws3['A1'] = "{{ value3 }}"
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            # Sheet1과 Sheet3만 처리
+            render_template(
+                template_path, 
+                output_path, 
+                {"value1": "처리됨1", "value2": "처리됨2", "value3": "처리됨3"},
+                sheets=["Sheet1", "Sheet3"]
+            )
+            
+            wb_out = load_workbook(output_path)
+            # Sheet1은 처리됨
+            assert wb_out["Sheet1"]['A1'].value == "처리됨1"
+            # Sheet2는 처리되지 않음 (원본 템플릿 유지)
+            assert wb_out["Sheet2"]['A1'].value == "{{ value2 }}"
+            # Sheet3은 처리됨
+            assert wb_out["Sheet3"]['A1'].value == "처리됨3"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_sheets_filter_nonexistent_sheet_ignored(self):
+        """존재하지 않는 시트명은 무시되는지 테스트"""
+        wb = Workbook()
+        ws1 = wb.active
+        ws1.title = "Sheet1"
+        ws1['A1'] = "{{ name }}"
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            # 존재하지 않는 시트와 존재하는 시트 혼합
+            render_template(
+                template_path, 
+                output_path, 
+                {"name": "홍길동"},
+                sheets=["NonExistent", "Sheet1", "AlsoNonExistent"]
+            )
+            
+            wb_out = load_workbook(output_path)
+            # Sheet1은 정상 처리됨
+            assert wb_out["Sheet1"]['A1'].value == "홍길동"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_sheets_filter_none_processes_all(self):
+        """sheets=None이면 모든 시트가 처리되는지 테스트"""
+        wb = Workbook()
+        ws1 = wb.active
+        ws1.title = "Sheet1"
+        ws1['A1'] = "{{ name }}"
+        
+        ws2 = wb.create_sheet("Sheet2")
+        ws2['A1'] = "{{ title }}"
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            # sheets 파라미터 없이 호출 (기존 동작)
+            render_template(template_path, output_path, {"name": "홍길동", "title": "제목"})
+            
+            wb_out = load_workbook(output_path)
+            assert wb_out["Sheet1"]['A1'].value == "홍길동"
+            assert wb_out["Sheet2"]['A1'].value == "제목"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)

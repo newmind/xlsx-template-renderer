@@ -53,7 +53,8 @@ class LoopContext:
 def render_template(
     template_path: str,
     output_path: str,
-    data: Dict[str, Any]
+    data: Dict[str, Any],
+    sheets: Optional[List[str]] = None
 ) -> None:
     """
     Render an xlsx template with the given data.
@@ -62,12 +63,21 @@ def render_template(
         template_path: Path to the template xlsx file
         output_path: Path to save the rendered xlsx file
         data: Dictionary containing the data to render
+        sheets: Optional list of sheet names to process. If None, all sheets are processed.
+                Non-existent sheet names are ignored.
     """
     # Load the template (rich_text=True to preserve Rich Text formatting)
     wb = load_workbook(template_path, rich_text=True)
     
-    # Process each sheet
-    for sheet_name in wb.sheetnames:
+    # Determine which sheets to process
+    if sheets is None:
+        target_sheets = wb.sheetnames
+    else:
+        # Filter to only existing sheets
+        target_sheets = [s for s in sheets if s in wb.sheetnames]
+    
+    # Process target sheets
+    for sheet_name in target_sheets:
         ws = wb[sheet_name]
         _render_sheet(ws, data)
     
