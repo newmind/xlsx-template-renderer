@@ -302,7 +302,7 @@ Excel에서 셀 편집 모드(F2)로 들어가 특정 텍스트만 선택 후 �
 ## 사용 예시
 
 ```python
-from xls_template_renderer import render_template
+from xlsx_template_renderer import render_template
 
 data = {
     "title": "월간 리포트",

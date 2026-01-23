@@ -1,4 +1,4 @@
-# xls-template-renderer
+# xlsx-template-renderer
 
 Jinja2 스타일 문법을 사용하여 xlsx 템플릿을 렌더링하는 Python 라이브러리입니다.
 
@@ -20,22 +20,22 @@ Jinja2 스타일 문법을 사용하여 xlsx 템플릿을 렌더링하는 Python
 
 ```bash
 # 최신 버전
-pip install git+https://github.com/newmind/xls-templete-renderer.git
+pip install git+https://github.com/newmind/xlsx-template-renderer.git
 
 # 특정 버전 (권장)
-pip install git+https://github.com/newmind/xls-templete-renderer.git@v0.2.0
+pip install git+https://github.com/newmind/xlsx-template-renderer.git@v0.3.0
 ```
 
 **requirements.txt에 추가:**
 ```
-xls-template-renderer @ git+https://github.com/newmind/xls-templete-renderer.git@v0.2.0
+xlsx-template-renderer @ git+https://github.com/newmind/xlsx-template-renderer.git@v0.3.0
 ```
 
 **pyproject.toml에 추가:**
 ```toml
 [project]
 dependencies = [
-    "xls-template-renderer @ git+https://github.com/newmind/xls-templete-renderer.git@v0.2.0",
+    "xlsx-template-renderer @ git+https://github.com/newmind/xlsx-template-renderer.git@v0.3.0",
 ]
 ```
 
@@ -53,7 +53,7 @@ pip install -e ".[dev]"
 ## 빠른 시작
 
 ```python
-from xls_template_renderer import render_template
+from xlsx_template_renderer import render_template
 
 data = {
     "title": "월간 리포트",
@@ -123,3 +123,16 @@ pytest
 - [ ] 나머지 연산: `{{ value % 2 }}`
 - [ ] 거듭제곱: `{{ value ** 2 }}`
 - [ ] 문자열 키 접근: `{{ dict['key-name'] }}`
+
+## 버전 히스토리
+
+### v0.3.0 (2026-01-23)
+- **[Breaking Change]** 패키지 네이밍 규칙 수정
+  - 패키지명: `xls-template-renderer` → `xlsx-template-renderer`
+  - 모듈명: `xls_template_renderer` → `xlsx_template_renderer`
+  - import 구문 변경 필요: `from xlsx_template_renderer import render_template`
+
+### v0.2.0
+- 초기 안정 버전
+- Jinja2 스타일 템플릿 문법 지원
+- Rich Text 서식 보존 기능

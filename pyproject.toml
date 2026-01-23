@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xls-template-renderer"
-version = "0.2.0"
+name = "xlsx-template-renderer"
+version = "0.3.0"
 description = "Jinja2-style template renderer for xlsx files"
 readme = "README.md"
 license = {text = "MIT"}

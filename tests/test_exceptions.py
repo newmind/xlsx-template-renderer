@@ -1,7 +1,7 @@
 """Tests for custom exceptions"""
 
 import pytest
-from xls_template_renderer.exceptions import (
+from xlsx_template_renderer.exceptions import (
     TemplateError,
     TemplateSyntaxError,
     TemplateRenderError
