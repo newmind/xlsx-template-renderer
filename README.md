@@ -66,6 +66,28 @@ data = {
 render_template("template.xlsx", "output.xlsx", data)
 ```
 
+## CLI 사용법
+
+```bash
+# 기본 사용법 (출력 파일 지정)
+xlsx-render template.xlsx data.json -o output.xlsx
+
+# 특정 시트만 렌더링
+xlsx-render template.xlsx data.json -s Sheet1 Sheet2 -o output.xlsx
+
+# in-place 렌더링 (원본 파일 수정, 확인 프롬프트 표시)
+xlsx-render template.xlsx data.json
+
+# 확인 없이 실행
+xlsx-render template.xlsx data.json -y
+```
+
+**옵션:**
+- `-o, --output FILE`: 출력 파일 경로 (미지정 시 원본 파일 수정)
+- `-s, --sheets SHEET [SHEET ...]`: 렌더링할 시트 이름 (미지정 시 전체)
+- `-y, --yes`: 확인 프롬프트 건너뛰기
+- `-v, --version`: 버전 표시
+
 ## 문서
 
 - [템플릿 문법](docs/SYNTAX.md)
@@ -127,6 +149,7 @@ pytest
 ## 버전 히스토리
 
 ### v0.7.0 (2026-01-24)
+- **CLI 도구 추가**: `xlsx-render` 명령으로 터미널에서 직접 렌더링 가능
 - **set 변수 할당 기능 추가**: `{% set var = value %}`
   - 딕셔너리 리터럴: `{% set types = {"a": "대면사인회", "b": "포토"} %}`
   - dict.get() 메서드: `{% set name = types.get(key, "기타") %}`

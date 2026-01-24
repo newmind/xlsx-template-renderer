@@ -32,6 +32,9 @@ dev = [
     "pytest-cov>=4.0.0",
 ]
 
+[project.scripts]
+xlsx-render = "xlsx_template_renderer.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
