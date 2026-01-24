@@ -510,3 +510,121 @@ class TestComparisonOperatorsFallback:
         context = {"count": 10}
         assert evaluate_condition("count < 11", context) is True
         assert evaluate_condition("count < 10", context) is False
+
+
+class TestIncludeSection:
+    """Tests for include_section parsing"""
+    
+    def test_include_section_basic(self):
+        """기본 include_section 파싱 테스트"""
+        token = parse_cell('{% include_section "컴포넌트" "헤더" %}')
+        assert token is not None
+        assert token.type == TokenType.INCLUDE_SECTION
+        assert token.include_sheet == "컴포넌트"
+        assert token.section_name == "헤더"
+    
+    def test_include_section_english(self):
+        """영문 시트/섹션명 테스트"""
+        token = parse_cell('{% include_section "Components" "header" %}')
+        assert token is not None
+        assert token.type == TokenType.INCLUDE_SECTION
+        assert token.include_sheet == "Components"
+        assert token.section_name == "header"
+    
+    def test_include_section_with_underscore(self):
+        """언더스코어 포함 섹션명 테스트"""
+        token = parse_cell('{% include_section "템플릿" "프리미엄_아이템" %}')
+        assert token is not None
+        assert token.type == TokenType.INCLUDE_SECTION
+        assert token.include_sheet == "템플릿"
+        assert token.section_name == "프리미엄_아이템"
+    
+    def test_include_section_with_indentation(self):
+        """들여쓰기가 있는 include_section 테스트"""
+        token = parse_cell('  {% include_section "시트" "섹션" %}')
+        assert token is not None
+        assert token.type == TokenType.INCLUDE_SECTION
+        assert token.include_sheet == "시트"
+        assert token.section_name == "섹션"
+    
+    def test_include_section_is_control_statement(self):
+        """include_section이 제어문으로 인식되는지 테스트"""
+        assert is_control_statement('{% include_section "시트" "섹션" %}') is True
+    
+    def test_include_section_invalid_format(self):
+        """잘못된 형식의 include_section 테스트"""
+        # 따옴표 없음
+        token = parse_cell('{% include_section 시트 섹션 %}')
+        assert token is None
+        
+        # 섹션명 없음
+        token = parse_cell('{% include_section "시트" %}')
+        assert token is None
+
+
+class TestDefineSectionMarkers:
+    """Tests for define_section markers"""
+    
+    def test_define_section_english(self):
+        """영문 define_section 마커 테스트"""
+        token = parse_cell('{# define_section:header #}')
+        assert token is not None
+        assert token.type == TokenType.DEFINE_SECTION
+        assert token.section_name == "header"
+    
+    def test_define_section_korean(self):
+        """한글 define_section 마커 테스트"""
+        token = parse_cell('{# define_section:헤더 #}')
+        assert token is not None
+        assert token.type == TokenType.DEFINE_SECTION
+        assert token.section_name == "헤더"
+    
+    def test_define_section_with_underscore(self):
+        """언더스코어 포함 섹션명 테스트"""
+        token = parse_cell('{# define_section:프리미엄_아이템 #}')
+        assert token is not None
+        assert token.type == TokenType.DEFINE_SECTION
+        assert token.section_name == "프리미엄_아이템"
+    
+    def test_define_section_with_spaces(self):
+        """공백이 있는 define_section 테스트"""
+        token = parse_cell('{#   define_section:footer   #}')
+        assert token is not None
+        assert token.type == TokenType.DEFINE_SECTION
+        assert token.section_name == "footer"
+    
+    def test_define_section_with_indentation(self):
+        """들여쓰기가 있는 define_section 테스트"""
+        token = parse_cell('  {# define_section:섹션 #}')
+        assert token is not None
+        assert token.type == TokenType.DEFINE_SECTION
+        assert token.section_name == "섹션"
+    
+    def test_enddefine_section(self):
+        """enddefine_section 마커 테스트"""
+        token = parse_cell('{# enddefine_section #}')
+        assert token is not None
+        assert token.type == TokenType.ENDDEFINE_SECTION
+    
+    def test_enddefine_section_with_spaces(self):
+        """공백이 있는 enddefine_section 테스트"""
+        token = parse_cell('{#   enddefine_section   #}')
+        assert token is not None
+        assert token.type == TokenType.ENDDEFINE_SECTION
+    
+    def test_enddefine_section_with_indentation(self):
+        """들여쓰기가 있는 enddefine_section 테스트"""
+        token = parse_cell('    {# enddefine_section #}')
+        assert token is not None
+        assert token.type == TokenType.ENDDEFINE_SECTION
+    
+    def test_define_section_is_control_statement(self):
+        """define_section이 제어문으로 인식되는지 테스트"""
+        assert is_control_statement('{# define_section:헤더 #}') is True
+        assert is_control_statement('{# enddefine_section #}') is True
+    
+    def test_regular_comment_not_define_section(self):
+        """일반 주석이 define_section으로 파싱되지 않는지 테스트"""
+        token = parse_cell('{# 이것은 일반 주석입니다 #}')
+        assert token is not None
+        assert token.type == TokenType.COMMENT

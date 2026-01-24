@@ -1866,3 +1866,361 @@ class TestSheetFiltering:
             os.unlink(template_path)
             if os.path.exists(output_path):
                 os.unlink(output_path)
+
+
+class TestIncludeSection:
+    """Tests for include_section functionality"""
+    
+    def test_include_section_basic(self):
+        """기본 include_section 테스트"""
+        wb = Workbook()
+        
+        # 메인 시트
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section "컴포넌트" "헤더" %}'
+        ws_main['A2'] = "본문 내용"
+        
+        # 컴포넌트 시트
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:헤더 #}'
+        ws_comp['A2'] = "헤더 행1"
+        ws_comp['A3'] = "헤더 행2"
+        ws_comp['A4'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            assert ws_out['A1'].value == "헤더 행1"
+            assert ws_out['A2'].value == "헤더 행2"
+            assert ws_out['A3'].value == "본문 내용"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_with_variables(self):
+        """변수 치환이 있는 include_section 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section "컴포넌트" "헤더" %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:헤더 #}'
+        ws_comp['A2'] = "회사명: {{ company }}"
+        ws_comp['A3'] = "날짜: {{ date }}"
+        ws_comp['A4'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {
+                "company": "메이크스타",
+                "date": "2024-01-20"
+            }, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            assert ws_out['A1'].value == "회사명: 메이크스타"
+            assert ws_out['A2'].value == "날짜: 2024-01-20"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_with_style(self):
+        """스타일이 유지되는 include_section 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section "컴포넌트" "스타일섹션" %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:스타일섹션 #}'
+        ws_comp['A2'] = "스타일 적용된 셀"
+        ws_comp['A2'].font = Font(bold=True, color="FF0000")
+        ws_comp['A2'].fill = PatternFill(start_color="FFFF00", fill_type="solid")
+        ws_comp['A3'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            assert ws_out['A1'].value == "스타일 적용된 셀"
+            assert ws_out['A1'].font.bold is True
+            assert ws_out['A1'].fill.start_color.rgb == "00FFFF00"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_korean_name(self):
+        """한글 섹션명 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section "컴포넌트" "한글섹션" %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:한글섹션 #}'
+        ws_comp['A2'] = "한글 섹션 내용"
+        ws_comp['A3'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            assert ws_out['A1'].value == "한글 섹션 내용"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_in_for_loop(self):
+        """for 루프 내 include_section 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% for item in items %}'
+        ws_main['A2'] = '{% include_section "컴포넌트" "아이템" %}'
+        ws_main['A3'] = '{% endfor %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:아이템 #}'
+        ws_comp['A2'] = "- {{ item }}"
+        ws_comp['A3'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {
+                "items": ["사과", "바나나", "오렌지"]
+            }, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            assert ws_out['A1'].value == "- 사과"
+            assert ws_out['A2'].value == "- 바나나"
+            assert ws_out['A3'].value == "- 오렌지"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_in_if_statement(self):
+        """if 문 내 include_section 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% if show_header %}'
+        ws_main['A2'] = '{% include_section "컴포넌트" "헤더" %}'
+        ws_main['A3'] = '{% endif %}'
+        ws_main['A4'] = "본문"
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:헤더 #}'
+        ws_comp['A2'] = "헤더 내용"
+        ws_comp['A3'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            # show_header = True
+            render_template(template_path, output_path, {"show_header": True}, sheets=["메인"])
+            wb_out = load_workbook(output_path)
+            assert wb_out["메인"]['A1'].value == "헤더 내용"
+            assert wb_out["메인"]['A2'].value == "본문"
+            
+            # show_header = False
+            render_template(template_path, output_path, {"show_header": False}, sheets=["메인"])
+            wb_out = load_workbook(output_path)
+            assert wb_out["메인"]['A1'].value == "본문"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_nonexistent_sheet(self):
+        """존재하지 않는 시트 에러 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section "없는시트" "헤더" %}'
+        ws_main['A2'] = "다음 행"
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            # 원본 명령어 유지
+            assert '{% include_section "없는시트" "헤더" %}' in str(ws_out['A1'].value)
+            # 에러 메시지
+            assert "[ERROR]" in str(ws_out['A2'].value)
+            assert "없는시트" in str(ws_out['A2'].value)
+            # 에러 메시지가 빨간색인지 확인
+            assert ws_out['A2'].font.color.rgb == "00FF0000"
+            # 다음 행
+            assert ws_out['A3'].value == "다음 행"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_nonexistent_section(self):
+        """존재하지 않는 섹션 에러 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section "컴포넌트" "없는섹션" %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:다른섹션 #}'
+        ws_comp['A2'] = "내용"
+        ws_comp['A3'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            # 원본 명령어 유지
+            assert '{% include_section "컴포넌트" "없는섹션" %}' in str(ws_out['A1'].value)
+            # 에러 메시지
+            assert "[ERROR]" in str(ws_out['A2'].value)
+            assert "없는섹션" in str(ws_out['A2'].value)
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_multiple_sections(self):
+        """여러 섹션이 정의된 시트 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section "컴포넌트" "헤더" %}'
+        ws_main['A2'] = "본문"
+        ws_main['A3'] = '{% include_section "컴포넌트" "푸터" %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:헤더 #}'
+        ws_comp['A2'] = "== 헤더 =="
+        ws_comp['A3'] = '{# enddefine_section #}'
+        ws_comp['A4'] = ""
+        ws_comp['A5'] = '{# define_section:푸터 #}'
+        ws_comp['A6'] = "== 푸터 =="
+        ws_comp['A7'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            assert ws_out['A1'].value == "== 헤더 =="
+            assert ws_out['A2'].value == "본문"
+            assert ws_out['A3'].value == "== 푸터 =="
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_define_section_markers_removed(self):
+        """define_section 마커가 결과에서 제거되는지 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{# define_section:테스트 #}'
+        ws_main['A2'] = "테스트 내용"
+        ws_main['A3'] = '{# enddefine_section #}'
+        ws_main['A4'] = "일반 행"
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            # define_section 마커들은 제거되고 내용만 남음
+            assert ws_out['A1'].value == "테스트 내용"
+            assert ws_out['A2'].value == "일반 행"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)

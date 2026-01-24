@@ -13,6 +13,7 @@ from openpyxl.cell.cell import Cell
 from openpyxl.utils import get_column_letter
 from openpyxl.cell.rich_text import CellRichText, TextBlock
 from openpyxl.cell.text import InlineFont
+from openpyxl.styles import Font
 
 from .parser import (
     parse_cell, 
@@ -79,13 +80,13 @@ def render_template(
     # Process target sheets
     for sheet_name in target_sheets:
         ws = wb[sheet_name]
-        _render_sheet(ws, data)
+        _render_sheet(ws, data, wb)
     
     # Save the result
     wb.save(output_path)
 
 
-def _render_sheet(ws: Worksheet, data: Dict[str, Any]) -> None:
+def _render_sheet(ws: Worksheet, data: Dict[str, Any], wb: Workbook) -> None:
     """
     Render a single worksheet.
     
@@ -115,7 +116,7 @@ def _render_sheet(ws: Worksheet, data: Dict[str, Any]) -> None:
         rows_data.append(row_cells)
     
     # Process template and generate output rows
-    output_rows = _process_rows(rows_data, data)
+    output_rows = _process_rows(rows_data, data, wb)
     
     # Clear the worksheet
     for row_idx in range(1, max_row + 1):
@@ -165,12 +166,13 @@ def _apply_cell_style(cell: Cell, style: dict) -> None:
 
 def _process_rows(
     rows_data: List[List[dict]], 
-    context: Dict[str, Any]
+    context: Dict[str, Any],
+    wb: Optional[Workbook] = None
 ) -> List[List[dict]]:
     """
     Process template rows and return output rows.
     
-    Handles for loops, if statements, and variable substitution.
+    Handles for loops, if statements, include_section, and variable substitution.
     """
     output_rows = []
     row_idx = 0
@@ -190,6 +192,35 @@ def _process_rows(
             
             if token.type == TokenType.COMMENT:
                 # Skip comment rows
+                row_idx += 1
+                continue
+            
+            elif token.type == TokenType.DEFINE_SECTION:
+                # Skip define_section markers (they are processed by include_section)
+                row_idx += 1
+                continue
+            
+            elif token.type == TokenType.ENDDEFINE_SECTION:
+                # Skip enddefine_section markers
+                row_idx += 1
+                continue
+            
+            elif token.type == TokenType.INCLUDE_SECTION:
+                # Process include_section
+                section_rows, error_msg = _get_section_rows(
+                    wb, token.include_sheet, token.section_name
+                )
+                
+                if error_msg:
+                    # Keep original command row and add error message row
+                    output_rows.append(row)
+                    error_row = _create_error_row(error_msg, len(row))
+                    output_rows.append(error_row)
+                else:
+                    # Process section rows with variable substitution
+                    processed = _process_rows(section_rows, context, wb)
+                    output_rows.extend(processed)
+                
                 row_idx += 1
                 continue
             
@@ -217,7 +248,7 @@ def _process_rows(
                     # Create new context with loop variable and loop object
                     loop_context = {**context, token.loop_var: item, 'loop': loop_obj}
                     # Recursively process body rows
-                    processed = _process_rows(body_rows, loop_context)
+                    processed = _process_rows(body_rows, loop_context, wb)
                     output_rows.extend(processed)
                 
                 # Skip to after endfor
@@ -236,14 +267,14 @@ def _process_rows(
                     if branch_type == 'if' or branch_type == 'elif':
                         if evaluate_condition(condition, context):
                             body_rows = rows_data[start:end]
-                            processed = _process_rows(body_rows, context)
+                            processed = _process_rows(body_rows, context, wb)
                             output_rows.extend(processed)
                             executed = True
                             break
                     elif branch_type == 'else':
                         if not executed:
                             body_rows = rows_data[start:end]
-                            processed = _process_rows(body_rows, context)
+                            processed = _process_rows(body_rows, context, wb)
                             output_rows.extend(processed)
                         break
                 
@@ -444,3 +475,137 @@ def _find_if_branches(
                         return idx, branches
     
     return None, branches
+
+
+def _get_section_rows(
+    wb: Optional[Workbook],
+    sheet_name: str,
+    section_name: str
+) -> Tuple[List[List[dict]], Optional[str]]:
+    """
+    Get rows from a defined section in another sheet.
+    
+    Args:
+        wb: Workbook containing the sheets
+        sheet_name: Name of the sheet containing the section
+        section_name: Name of the section to retrieve
+    
+    Returns:
+        Tuple of (rows_data, error_message)
+        If successful, error_message is None
+        If failed, rows_data is empty list and error_message contains the error
+    """
+    if wb is None:
+        return [], "[ERROR] 워크북이 없습니다"
+    
+    # Check if sheet exists
+    if sheet_name not in wb.sheetnames:
+        return [], f"[ERROR] 시트 '{sheet_name}'를 찾을 수 없습니다"
+    
+    ws = wb[sheet_name]
+    
+    # Find the section
+    section_rows, error = _find_section_in_sheet(ws, section_name)
+    
+    if error:
+        return [], f"[ERROR] {error} (시트: {sheet_name})"
+    
+    return section_rows, None
+
+
+def _find_section_in_sheet(
+    ws: Worksheet,
+    section_name: str
+) -> Tuple[List[List[dict]], Optional[str]]:
+    """
+    Find a defined section in a worksheet and return its rows.
+    
+    Args:
+        ws: Worksheet to search
+        section_name: Name of the section to find
+    
+    Returns:
+        Tuple of (rows_data, error_message)
+    """
+    max_row = ws.max_row
+    max_col = ws.max_column
+    
+    if max_row is None or max_row == 0:
+        return [], f"섹션 '{section_name}'를 찾을 수 없습니다"
+    
+    start_row = None
+    end_row = None
+    
+    # Scan for define_section and enddefine_section markers
+    for row_idx in range(1, max_row + 1):
+        cell_value = ws.cell(row=row_idx, column=1).value
+        if cell_value is None:
+            continue
+        
+        cell_str = str(cell_value).strip()
+        token = parse_cell(cell_str)
+        
+        if token is None:
+            continue
+        
+        if token.type == TokenType.DEFINE_SECTION:
+            if token.section_name == section_name:
+                if start_row is not None:
+                    # Nested define_section (not supported)
+                    continue
+                start_row = row_idx
+        
+        elif token.type == TokenType.ENDDEFINE_SECTION:
+            if start_row is not None:
+                end_row = row_idx
+                break
+    
+    # Check for errors
+    if start_row is None:
+        return [], f"섹션 '{section_name}'의 define_section 마커가 없습니다"
+    
+    if end_row is None:
+        return [], f"섹션 '{section_name}'의 enddefine_section 마커가 없습니다"
+    
+    # Extract rows between markers (excluding the markers themselves)
+    rows_data = []
+    for row_idx in range(start_row + 1, end_row):
+        row_cells = []
+        for col_idx in range(1, (max_col or 0) + 1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            row_cells.append({
+                'value': cell.value,
+                'style': _copy_cell_style(cell),
+            })
+        rows_data.append(row_cells)
+    
+    return rows_data, None
+
+
+def _create_error_row(error_msg: str, num_cols: int) -> List[dict]:
+    """
+    Create a row with an error message styled in red bold.
+    
+    Args:
+        error_msg: Error message to display
+        num_cols: Number of columns in the row
+    
+    Returns:
+        List of cell data dictionaries
+    """
+    error_font = Font(color="FF0000", bold=True)
+    
+    row = []
+    for col_idx in range(num_cols):
+        if col_idx == 0:
+            row.append({
+                'value': error_msg,
+                'style': {'font': error_font},
+            })
+        else:
+            row.append({
+                'value': None,
+                'style': {},
+            })
+    
+    return row

@@ -292,12 +292,93 @@ Excel에서 셀 편집 모드(F2)로 들어가 특정 텍스트만 선택 후 �
 | for 루프 내 서식 복제 | ✅ |
 | for 루프 내 Rich Text 복제 | ✅ |
 
+## 섹션 포함 (include_section)
+
+다른 시트에 정의된 섹션을 현재 위치에 복사해서 삽입합니다. 재사용 가능한 컴포넌트를 만들 때 유용합니다.
+
+### 섹션 정의 (define_section)
+
+컴포넌트 시트에서 재사용할 영역을 정의합니다.
+
+```
+{# define_section:섹션이름 #}
+... 섹션 내용 (여러 행 가능) ...
+{# enddefine_section #}
+```
+
+**특징:**
+- 섹션 이름은 영문, 한글, 숫자, 언더스코어 사용 가능
+- `define_section`과 `enddefine_section` 마커 행은 렌더링 결과에 포함되지 않음
+- 한 시트에 여러 섹션 정의 가능
+
+**예시 (컴포넌트 시트):**
+
+| A열 | B열 | C열 |
+|-----|-----|-----|
+| {# define_section:헤더 #} | | |
+| 회사명: {{ company }} | | |
+| 작성일: {{ date }} | | |
+| {# enddefine_section #} | | |
+| | | |
+| {# define_section:푸터 #} | | |
+| 문의: {{ contact }} | | |
+| {# enddefine_section #} | | |
+
+### 섹션 사용 (include_section)
+
+정의된 섹션을 현재 위치에 삽입합니다.
+
+```
+{% include_section "시트명" "섹션이름" %}
+```
+
+**예시 (메인 시트):**
+
+| A열 |
+|-----|
+| {% include_section "컴포넌트" "헤더" %} |
+| ... 본문 내용 ... |
+| {% include_section "컴포넌트" "푸터" %} |
+
+**결과:**
+
+| A열 |
+|-----|
+| 회사명: 메이크스타 |
+| 작성일: 2024-01-20 |
+| ... 본문 내용 ... |
+| 문의: support@makestar.com |
+
+### for/if 내에서 사용
+
+`include_section`은 for 루프나 if 조건문 내에서도 사용할 수 있습니다.
+
+**예시:**
+
+| A열 |
+|-----|
+| {% for item in items %} |
+| {% if item.type == "premium" %} |
+| {% include_section "컴포넌트" "프리미엄_아이템" %} |
+| {% else %} |
+| {% include_section "컴포넌트" "기본_아이템" %} |
+| {% endif %} |
+| {% endfor %} |
+
+### 에러 처리
+
+시트나 섹션을 찾을 수 없는 경우, 원본 명령어를 유지하고 다음 행에 빨간색 볼드로 에러 메시지가 표시됩니다.
+
+**에러 메시지 예시:**
+- `[ERROR] 시트 '없는시트'를 찾을 수 없습니다`
+- `[ERROR] 섹션 '없는섹션'의 define_section 마커가 없습니다 (시트: 컴포넌트)`
+
 ## 제약사항
 
 1. **제어문 위치**: 제어문(`{% %}`)과 주석(`{# #}`)은 빈 행의 A열에만 위치
 2. **제어문 혼합 불가**: 제어문 셀에는 다른 텍스트가 없어야 함
-3. **종료 태그 필수**: `{% endfor %}`, `{% endif %}` 필수
-4. **미지원 기능**: 매크로, include, 블록 상속 등
+3. **종료 태그 필수**: `{% endfor %}`, `{% endif %}`, `{# enddefine_section #}` 필수
+4. **중첩 define_section 미지원**: define_section 내부에 다른 define_section을 정의할 수 없음
 
 ## 사용 예시
 

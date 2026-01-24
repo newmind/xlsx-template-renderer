@@ -20,6 +20,9 @@ class TokenType(Enum):
     ELSE = auto()           # {% else %}
     IF_END = auto()         # {% endif %}
     COMMENT = auto()        # {# comment #}
+    INCLUDE_SECTION = auto()    # {% include_section "sheet" "name" %}
+    DEFINE_SECTION = auto()     # {# define_section:name #}
+    ENDDEFINE_SECTION = auto()  # {# enddefine_section #}
 
 
 @dataclass
@@ -30,6 +33,8 @@ class Token:
     expression: str = ""    # Extracted expression (for variables, conditions)
     loop_var: str = ""      # Loop variable name (for for loops)
     loop_iter: str = ""     # Loop iterable expression (for for loops)
+    include_sheet: str = "" # Sheet name for include_section
+    section_name: str = ""  # Section name for include_section/define_section
 
 
 # Regex patterns
@@ -45,6 +50,11 @@ ELIF_PATTERN = re.compile(r'^elif\s+(.+)$')
 ELSE_PATTERN = re.compile(r'^else$')
 IF_END_PATTERN = re.compile(r'^endif$')
 
+# Section patterns
+INCLUDE_SECTION_PATTERN = re.compile(r'^include_section\s+"([^"]+)"\s+"([^"]+)"$')
+DEFINE_SECTION_PATTERN = re.compile(r'^\{#\s*define_section:([\w가-힣_]+)\s*#\}$')
+ENDDEFINE_SECTION_PATTERN = re.compile(r'^\{#\s*enddefine_section\s*#\}$')
+
 
 def parse_cell(content: str) -> Optional[Token]:
     """
@@ -59,6 +69,19 @@ def parse_cell(content: str) -> Optional[Token]:
         return None
     
     content = str(content)
+    
+    # Check for define_section marker (before general comment check)
+    define_match = DEFINE_SECTION_PATTERN.match(content.strip())
+    if define_match:
+        return Token(
+            type=TokenType.DEFINE_SECTION,
+            content=content,
+            section_name=define_match.group(1)
+        )
+    
+    # Check for enddefine_section marker
+    if ENDDEFINE_SECTION_PATTERN.match(content.strip()):
+        return Token(type=TokenType.ENDDEFINE_SECTION, content=content)
     
     # Check for comment (entire cell)
     if COMMENT_PATTERN.match(content):
@@ -121,6 +144,16 @@ def _parse_control_statement(content: str, statement: str) -> Optional[Token]:
     if IF_END_PATTERN.match(statement):
         return Token(type=TokenType.IF_END, content=content)
     
+    # {% include_section "sheet" "name" %}
+    include_match = INCLUDE_SECTION_PATTERN.match(statement)
+    if include_match:
+        return Token(
+            type=TokenType.INCLUDE_SECTION,
+            content=content,
+            include_sheet=include_match.group(1),
+            section_name=include_match.group(2)
+        )
+    
     return None
 
 
@@ -130,6 +163,14 @@ def is_control_statement(content: str) -> bool:
         return False
     
     content = str(content)
+    content_stripped = content.strip()
+    
+    # Check for define_section/enddefine_section markers
+    if DEFINE_SECTION_PATTERN.match(content_stripped):
+        return True
+    
+    if ENDDEFINE_SECTION_PATTERN.match(content_stripped):
+        return True
     
     if COMMENT_PATTERN.match(content):
         return True
