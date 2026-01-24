@@ -59,7 +59,7 @@ def create_include_section_template():
     ws_comp['A4'] = ""
     ws_comp['A5'] = '{# enddefine_section #}'
     
-    # VIP 주문 섹션 정의
+    # VIP 주문 섹션 정의 (섹션 내에서 for 사용)
     ws_comp['A7'] = '{# define_section:VIP_주문 #}'
     ws_comp['A8'] = "⭐ VIP 주문 #{{ order.id }}"
     ws_comp['A8'].font = Font(bold=True, color="FFD700")
@@ -67,24 +67,38 @@ def create_include_section_template():
     ws_comp['B8'] = "{{ order.customer }}"
     ws_comp['C8'] = "{{ order.amount }}"
     ws_comp['C8'].number_format = '#,##0원'
-    ws_comp['A9'] = '{# enddefine_section #}'
+    # 섹션 내부에서 for 루프 - 주문 상품 목록
+    ws_comp['A9'] = '{% for item in order.items %}'
+    ws_comp['A10'] = "  - {{ item.name }}"
+    ws_comp['B10'] = "{{ item.qty }}개"
+    ws_comp['C10'] = "{{ item.price }}"
+    ws_comp['C10'].number_format = '#,##0원'
+    ws_comp['A11'] = '{% endfor %}'
+    ws_comp['A12'] = '{# enddefine_section #}'
     
-    # 일반 주문 섹션 정의
-    ws_comp['A11'] = '{# define_section:일반_주문 #}'
-    ws_comp['A12'] = "주문 #{{ order.id }}"
-    ws_comp['B12'] = "{{ order.customer }}"
-    ws_comp['C12'] = "{{ order.amount }}"
-    ws_comp['C12'].number_format = '#,##0원'
-    ws_comp['A13'] = '{# enddefine_section #}'
+    # 일반 주문 섹션 정의 (섹션 내에서 for 사용)
+    ws_comp['A14'] = '{# define_section:일반_주문 #}'
+    ws_comp['A15'] = "주문 #{{ order.id }}"
+    ws_comp['B15'] = "{{ order.customer }}"
+    ws_comp['C15'] = "{{ order.amount }}"
+    ws_comp['C15'].number_format = '#,##0원'
+    # 섹션 내부에서 for 루프 - 주문 상품 목록
+    ws_comp['A16'] = '{% for item in order.items %}'
+    ws_comp['A17'] = "  - {{ item.name }}"
+    ws_comp['B17'] = "{{ item.qty }}개"
+    ws_comp['C17'] = "{{ item.price }}"
+    ws_comp['C17'].number_format = '#,##0원'
+    ws_comp['A18'] = '{% endfor %}'
+    ws_comp['A19'] = '{# enddefine_section #}'
     
     # 푸터 섹션 정의
-    ws_comp['A15'] = '{# define_section:푸터 #}'
-    ws_comp['A16'] = ""
-    ws_comp['A17'] = "총 {{ orders|length }}건의 주문"
-    ws_comp['A17'].font = Font(italic=True, color="666666")
-    ws_comp['A18'] = "문의: {{ contact_email }}"
-    ws_comp['A18'].font = Font(color="0066CC")
-    ws_comp['A19'] = '{# enddefine_section #}'
+    ws_comp['A21'] = '{# define_section:푸터 #}'
+    ws_comp['A22'] = ""
+    ws_comp['A23'] = "총 {{ orders|length }}건의 주문"
+    ws_comp['A23'].font = Font(italic=True, color="666666")
+    ws_comp['A24'] = "문의: {{ contact_email }}"
+    ws_comp['A24'].font = Font(color="0066CC")
+    ws_comp['A25'] = '{# enddefine_section #}'
     
     # 열 너비 조정
     ws_main.column_dimensions['A'].width = 25
@@ -107,16 +121,30 @@ def main():
     template_path = create_include_section_template()
     output_path = Path(__file__).parent / "include_section_output.xlsx"
     
-    # 렌더링할 데이터
+    # 렌더링할 데이터 (주문별 items로 중첩 데이터 테스트)
     data = {
         "company_name": "메이크스타 쇼핑몰",
         "report_date": "2024-01-20",
         "contact_email": "support@makestar.com",
         "orders": [
-            {"id": 1001, "customer": "김철수", "amount": 150000, "is_vip": True},
-            {"id": 1002, "customer": "이영희", "amount": 35000, "is_vip": False},
-            {"id": 1003, "customer": "박지민", "amount": 280000, "is_vip": True},
-            {"id": 1004, "customer": "최수진", "amount": 42000, "is_vip": False},
+            {"id": 1001, "customer": "김철수", "amount": 150000, "is_vip": True,
+             "items": [
+                 {"name": "프리미엄 앨범", "qty": 2, "price": 50000},
+                 {"name": "포토카드 세트", "qty": 1, "price": 50000},
+             ]},
+            {"id": 1002, "customer": "이영희", "amount": 35000, "is_vip": False,
+             "items": [
+                 {"name": "일반 앨범", "qty": 1, "price": 35000},
+             ]},
+            {"id": 1003, "customer": "박지민", "amount": 280000, "is_vip": True,
+             "items": [
+                 {"name": "한정판 앨범", "qty": 1, "price": 150000},
+                 {"name": "굿즈 패키지", "qty": 2, "price": 65000},
+             ]},
+            {"id": 1004, "customer": "최수진", "amount": 42000, "is_vip": False,
+             "items": [
+                 {"name": "포스터 세트", "qty": 3, "price": 14000},
+             ]},
         ]
     }
     
@@ -143,6 +171,8 @@ def main():
     print("  - include_section으로 다른 시트의 섹션 삽입")
     print("  - for 루프 내에서 include_section 사용")
     print("  - if 조건문과 include_section 조합")
+    print("  - 섹션 내부에서 for 루프 사용 (order.items 순회)")
+    print("  - 중첩 데이터 context 전달 (order -> order.items)")
     print("  - 스타일이 포함된 섹션 복사")
     print("  - 변수 치환 (섹션 내부의 {{ }} 처리)")
 
