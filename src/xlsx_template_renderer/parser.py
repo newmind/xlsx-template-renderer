@@ -34,7 +34,8 @@ class Token:
     expression: str = ""    # Extracted expression (for variables, conditions)
     loop_var: str = ""      # Loop variable name (for for loops)
     loop_iter: str = ""     # Loop iterable expression (for for loops)
-    include_sheet: str = "" # Sheet name for include_section
+    include_sheet: str = "" # Sheet name for include_section (literal or var name)
+    include_sheet_is_var: bool = False  # True if include_sheet is a variable name
     section_name: str = ""  # Section name for include_section/define_section
     set_var: str = ""       # Variable name for set statement
     set_value: str = ""     # Value expression for set statement
@@ -55,7 +56,9 @@ IF_END_PATTERN = re.compile(r'^endif$')
 SET_PATTERN = re.compile(r'^set\s+(\w+)\s*=\s*(.+)$')
 
 # Section patterns
+# include_section "시트명" "섹션명" 또는 include_section 변수 "섹션명"
 INCLUDE_SECTION_PATTERN = re.compile(r'^include_section\s+"([^"]+)"\s+"([^"]+)"$')
+INCLUDE_SECTION_VAR_PATTERN = re.compile(r'^include_section\s+(\w+)\s+"([^"]+)"$')
 DEFINE_SECTION_PATTERN = re.compile(r'^\{#\s*define_section:([\w가-힣_]+)\s*#\}$')
 ENDDEFINE_SECTION_PATTERN = re.compile(r'^\{#\s*enddefine_section\s*#\}$')
 
@@ -148,14 +151,26 @@ def _parse_control_statement(content: str, statement: str) -> Optional[Token]:
     if IF_END_PATTERN.match(statement):
         return Token(type=TokenType.IF_END, content=content)
     
-    # {% include_section "sheet" "name" %}
+    # {% include_section "sheet" "name" %} - 리터럴 형식
     include_match = INCLUDE_SECTION_PATTERN.match(statement)
     if include_match:
         return Token(
             type=TokenType.INCLUDE_SECTION,
             content=content,
             include_sheet=include_match.group(1),
+            include_sheet_is_var=False,
             section_name=include_match.group(2)
+        )
+    
+    # {% include_section sheet_var "name" %} - 변수 형식
+    include_var_match = INCLUDE_SECTION_VAR_PATTERN.match(statement)
+    if include_var_match:
+        return Token(
+            type=TokenType.INCLUDE_SECTION,
+            content=content,
+            include_sheet=include_var_match.group(1),
+            include_sheet_is_var=True,
+            section_name=include_var_match.group(2)
         )
     
     # {% set var = value %}

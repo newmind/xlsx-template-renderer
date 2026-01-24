@@ -30,6 +30,61 @@ COMPARE_OPS = {
     ast.GtE: operator.ge,
 }
 
+# String comparison operators (order matters: longer ones first)
+STR_COMPARE_OPS = ['==', '!=', '>=', '<=', '>', '<']
+
+# Mapping from string operator to operator function
+STR_COMPARE_FUNCS = {
+    '==': operator.eq,
+    '!=': operator.ne,
+    '>=': operator.ge,
+    '<=': operator.le,
+    '>': operator.gt,
+    '<': operator.lt,
+}
+
+
+def _extract_comparison(expression: str) -> tuple:
+    """
+    Extract comparison operator from expression, respecting strings and parentheses.
+    
+    For expressions like "items|length == 1", returns:
+        ("items|length", "==", "1")
+    
+    For expressions without comparison, returns:
+        (expression, None, None)
+    """
+    in_string = False
+    string_char = None
+    paren_depth = 0
+    
+    i = 0
+    while i < len(expression):
+        char = expression[i]
+        
+        # Handle string boundaries
+        if char in ('"', "'") and not in_string:
+            in_string = True
+            string_char = char
+        elif char == string_char and in_string:
+            in_string = False
+            string_char = None
+        elif char == '(' and not in_string:
+            paren_depth += 1
+        elif char == ')' and not in_string:
+            paren_depth -= 1
+        elif not in_string and paren_depth == 0:
+            # Check for comparison operators (longer ones first)
+            for op in STR_COMPARE_OPS:
+                if expression[i:i+len(op)] == op:
+                    left = expression[:i].strip()
+                    right = expression[i+len(op):].strip()
+                    return (left, op, right)
+        
+        i += 1
+    
+    return (expression, None, None)
+
 
 def resolve_path(data: Dict[str, Any], path: str) -> Any:
     """
@@ -107,6 +162,7 @@ class ExpressionEvaluator:
         - Arithmetic: price * 1.1, 10 + 5
         - String concatenation: "hello" + name
         - Filters: value|default('N/A'), items|length
+        - Filter with comparison: items|length == 1, items|length > 0
         - Ternary: 'yes' if condition else 'no'
         
         Returns the evaluated value, or None if evaluation fails.
@@ -115,6 +171,19 @@ class ExpressionEvaluator:
         
         if not expression:
             return None
+        
+        # Check for filter + comparison combination (e.g., "items|length == 1")
+        left, op, right = _extract_comparison(expression)
+        if op and '|' in left:
+            # Evaluate left side with filters
+            left_val = self._evaluate_with_filters(left)
+            # Evaluate right side normally
+            right_val = self.evaluate(right)
+            
+            if left_val is None or right_val is None:
+                return None
+            
+            return STR_COMPARE_FUNCS[op](left_val, right_val)
         
         # Parse filters first (e.g., "value|default('N/A')")
         base_expr, filters = parse_filter_expression(expression)
@@ -125,6 +194,21 @@ class ExpressionEvaluator:
             result = self._eval_node(tree.body)
             
             # Apply filters
+            for filter_name, filter_args in filters:
+                result = apply_filter(result, filter_name, filter_args)
+            
+            return result
+        except (SyntaxError, ValueError, TypeError, KeyError):
+            return None
+    
+    def _evaluate_with_filters(self, expression: str) -> Any:
+        """Evaluate an expression with filters applied."""
+        base_expr, filters = parse_filter_expression(expression.strip())
+        
+        try:
+            tree = ast.parse(base_expr, mode='eval')
+            result = self._eval_node(tree.body)
+            
             for filter_name, filter_args in filters:
                 result = apply_filter(result, filter_name, filter_args)
             

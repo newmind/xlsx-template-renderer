@@ -48,6 +48,18 @@ def create_include_section_template():
     # 푸터 섹션 포함
     ws_main['A10'] = '{% include_section "컴포넌트" "푸터" %}'
     
+    # 에러 케이스: 존재하지 않는 시트 참조
+    ws_main['A11'] = '{% include_section "없는시트" "헤더" %}'
+    
+    # 에러 케이스: 존재하지 않는 섹션 참조
+    ws_main['A12'] = '{% include_section "컴포넌트" "없는섹션" %}'
+    
+    # 변수로 시트 이름 참조 (존재하지 않는 변수)
+    ws_main['A13'] = '{% include_section 없는변수 "헤더" %}'
+    
+    # 변수로 시트 이름 참조 (유효한 변수 - target_sheet 사용)
+    ws_main['A14'] = '{% include_section target_sheet "헤더" %}'
+    
     # ===== 컴포넌트 시트 =====
     ws_comp = wb.create_sheet("컴포넌트")
     
@@ -126,6 +138,7 @@ def main():
         "company_name": "메이크스타 쇼핑몰",
         "report_date": "2024-01-20",
         "contact_email": "support@makestar.com",
+        "target_sheet": "컴포넌트",  # 변수로 시트 이름 참조 테스트용
         "orders": [
             {"id": 1001, "customer": "김철수", "amount": 150000, "is_vip": True,
              "items": [
@@ -175,6 +188,8 @@ def main():
     print("  - 중첩 데이터 context 전달 (order -> order.items)")
     print("  - 스타일이 포함된 섹션 복사")
     print("  - 변수 치환 (섹션 내부의 {{ }} 처리)")
+    print("  - 에러 처리: 존재하지 않는 시트/섹션 참조 시 원본 제어문 유지 + 에러 메시지")
+    print("  - 변수로 시트 이름 참조: {% include_section 변수명 \"섹션명\" %}")
 
 
 if __name__ == "__main__":

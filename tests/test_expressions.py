@@ -348,6 +348,47 @@ class TestFiltersInExpression:
     def test_filter_on_missing_value(self):
         context = {}
         assert evaluate_expression("unknown|default('fallback')", context) == 'fallback'
+    
+    def test_length_comparison_equals_one(self):
+        """배열 길이가 1인지 비교 테스트"""
+        context = {"items": ["a"]}
+        assert evaluate_expression("items|length == 1", context) is True
+        context = {"items": ["a", "b"]}
+        assert evaluate_expression("items|length == 1", context) is False
+        context = {"items": []}
+        assert evaluate_expression("items|length == 1", context) is False
+    
+    def test_length_comparison_greater_than_one(self):
+        """배열 길이가 1보다 큰지 비교 테스트"""
+        context = {"items": ["a", "b"]}
+        assert evaluate_expression("items|length > 1", context) is True
+        context = {"items": ["a"]}
+        assert evaluate_expression("items|length > 1", context) is False
+        context = {"items": []}
+        assert evaluate_expression("items|length > 1", context) is False
+    
+    def test_length_comparison_greater_equal_one(self):
+        """배열 길이가 1 이상인지 비교 테스트"""
+        context = {"items": ["a"]}
+        assert evaluate_expression("items|length >= 1", context) is True
+        context = {"items": ["a", "b", "c"]}
+        assert evaluate_expression("items|length >= 1", context) is True
+        context = {"items": []}
+        assert evaluate_expression("items|length >= 1", context) is False
+    
+    def test_length_comparison_less_than_one(self):
+        """배열 길이가 1 미만인지 비교 테스트 (빈 배열)"""
+        context = {"items": []}
+        assert evaluate_expression("items|length < 1", context) is True
+        context = {"items": ["a"]}
+        assert evaluate_expression("items|length < 1", context) is False
+    
+    def test_length_comparison_not_equals(self):
+        """배열 길이가 1이 아닌지 비교 테스트"""
+        context = {"items": ["a", "b"]}
+        assert evaluate_expression("items|length != 1", context) is True
+        context = {"items": ["a"]}
+        assert evaluate_expression("items|length != 1", context) is False
 
 
 class TestBoolOpInExpression:

@@ -226,8 +226,25 @@ def _process_rows(
             
             elif token.type == TokenType.INCLUDE_SECTION:
                 # Process include_section
+                # 시트 이름이 변수인 경우 context에서 값을 가져옴
+                if token.include_sheet_is_var:
+                    sheet_name = resolve_path(context, token.include_sheet)
+                    if sheet_name is None:
+                        # 변수가 없으면 원본 유지 + 에러 메시지
+                        output_rows.append(row)
+                        error_row = _create_error_row(
+                            f"[ERROR] 변수 '{token.include_sheet}'를 찾을 수 없습니다",
+                            len(row)
+                        )
+                        output_rows.append(error_row)
+                        row_idx += 1
+                        continue
+                    sheet_name = str(sheet_name)
+                else:
+                    sheet_name = token.include_sheet
+                
                 section_rows, error_msg = _get_section_rows(
-                    wb, token.include_sheet, token.section_name
+                    wb, sheet_name, token.section_name
                 )
                 
                 if error_msg:

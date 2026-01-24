@@ -553,13 +553,28 @@ class TestIncludeSection:
     
     def test_include_section_invalid_format(self):
         """잘못된 형식의 include_section 테스트"""
-        # 따옴표 없음
+        # 시트와 섹션 모두 따옴표 없음
         token = parse_cell('{% include_section 시트 섹션 %}')
         assert token is None
         
         # 섹션명 없음
         token = parse_cell('{% include_section "시트" %}')
         assert token is None
+    
+    def test_include_section_with_variable_sheet(self):
+        """변수로 시트명을 지정하는 include_section 테스트"""
+        token = parse_cell('{% include_section sheet_name "헤더" %}')
+        assert token is not None
+        assert token.type == TokenType.INCLUDE_SECTION
+        assert token.include_sheet == "sheet_name"
+        assert token.include_sheet_is_var is True
+        assert token.section_name == "헤더"
+    
+    def test_include_section_literal_sheet_not_variable(self):
+        """리터럴 시트명은 변수가 아님을 확인"""
+        token = parse_cell('{% include_section "컴포넌트" "헤더" %}')
+        assert token is not None
+        assert token.include_sheet_is_var is False
 
 
 class TestSetStatement:

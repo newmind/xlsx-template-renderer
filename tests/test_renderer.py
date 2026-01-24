@@ -2194,6 +2194,74 @@ class TestIncludeSection:
             if os.path.exists(output_path):
                 os.unlink(output_path)
     
+    def test_include_section_with_variable_sheet(self):
+        """변수로 시트명을 지정하는 include_section 테스트"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section target_sheet "헤더" %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:헤더 #}'
+        ws_comp['A2'] = "헤더 내용"
+        ws_comp['A3'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            # target_sheet 변수로 시트 이름 전달
+            render_template_to_file(template_path, output_path, 
+                                    {"target_sheet": "컴포넌트"}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            assert ws_out['A1'].value == "헤더 내용"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_include_section_with_undefined_variable(self):
+        """정의되지 않은 변수로 시트명 지정 시 에러 메시지"""
+        wb = Workbook()
+        
+        ws_main = wb.active
+        ws_main.title = "메인"
+        ws_main['A1'] = '{% include_section undefined_var "헤더" %}'
+        
+        ws_comp = wb.create_sheet("컴포넌트")
+        ws_comp['A1'] = '{# define_section:헤더 #}'
+        ws_comp['A2'] = "헤더 내용"
+        ws_comp['A3'] = '{# enddefine_section #}'
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out["메인"]
+            
+            # 원본 제어문 유지
+            assert '{% include_section undefined_var "헤더" %}' in str(ws_out['A1'].value)
+            # 에러 메시지
+            assert "[ERROR]" in str(ws_out['A2'].value)
+            assert "undefined_var" in str(ws_out['A2'].value)
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
     def test_define_section_markers_removed(self):
         """define_section 마커가 결과에서 제거되는지 테스트"""
         wb = Workbook()
