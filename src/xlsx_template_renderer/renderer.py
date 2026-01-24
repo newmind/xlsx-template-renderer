@@ -274,6 +274,13 @@ def _process_rows(
                 row_idx = end_idx + 1
                 continue
             
+            elif token.type == TokenType.SET:
+                # Process set statement: {% set var = value %}
+                value = evaluate_expression(token.set_value, context)
+                context[token.set_var] = value
+                row_idx += 1
+                continue  # set 행은 출력에 포함하지 않음
+            
             elif token.type == TokenType.IF_START:
                 # Process if statement
                 end_idx, branches = _find_if_branches(rows_data, row_idx)

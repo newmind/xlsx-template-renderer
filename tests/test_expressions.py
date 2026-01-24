@@ -414,3 +414,152 @@ class TestChainedComparison:
         """연쇄 비교에서 None 값 테스트"""
         context = {"a": 1, "b": None}
         assert evaluate_expression("a < b < 10", context) is None
+
+
+class TestDictLiteral:
+    """Tests for dictionary literal evaluation"""
+    
+    def test_simple_dict(self):
+        """단순 딕셔너리 리터럴 테스트"""
+        context = {}
+        result = evaluate_expression('{"a": 1, "b": 2}', context)
+        assert result == {"a": 1, "b": 2}
+    
+    def test_dict_with_string_values(self):
+        """문자열 값을 가진 딕셔너리 테스트"""
+        context = {}
+        result = evaluate_expression('{"a": "대면사인회", "b": "포토"}', context)
+        assert result == {"a": "대면사인회", "b": "포토"}
+    
+    def test_dict_access_with_string_key(self):
+        """문자열 키로 딕셔너리 접근 테스트"""
+        context = {"types": {"a": "대면사인회", "b": "포토"}}
+        assert evaluate_expression('types["a"]', context) == "대면사인회"
+        assert evaluate_expression('types["b"]', context) == "포토"
+    
+    def test_dict_access_with_variable_key(self):
+        """변수 키로 딕셔너리 접근 테스트"""
+        context = {"types": {"a": "대면사인회", "b": "포토"}, "key": "a"}
+        assert evaluate_expression("types[key]", context) == "대면사인회"
+    
+    def test_dict_access_missing_key(self):
+        """존재하지 않는 키 접근 테스트"""
+        context = {"types": {"a": "대면사인회"}}
+        assert evaluate_expression('types["x"]', context) is None
+
+
+class TestListLiteral:
+    """Tests for list literal evaluation"""
+    
+    def test_simple_list(self):
+        """단순 리스트 리터럴 테스트"""
+        context = {}
+        result = evaluate_expression("[1, 2, 3]", context)
+        assert result == [1, 2, 3]
+    
+    def test_list_with_strings(self):
+        """문자열 리스트 테스트"""
+        context = {}
+        result = evaluate_expression('["a", "b", "c"]', context)
+        assert result == ["a", "b", "c"]
+    
+    def test_tuple_literal(self):
+        """튜플 리터럴 테스트"""
+        context = {}
+        result = evaluate_expression('(1, 2, 3)', context)
+        assert result == (1, 2, 3)
+
+
+class TestMethodCall:
+    """Tests for method call evaluation"""
+    
+    def test_dict_get_with_existing_key(self):
+        """dict.get() 존재하는 키 테스트"""
+        context = {"types": {"a": "대면사인회", "b": "포토"}}
+        result = evaluate_expression('types.get("a")', context)
+        assert result == "대면사인회"
+    
+    def test_dict_get_with_missing_key(self):
+        """dict.get() 없는 키 테스트 (default None)"""
+        context = {"types": {"a": "대면사인회"}}
+        result = evaluate_expression('types.get("x")', context)
+        assert result is None
+    
+    def test_dict_get_with_default(self):
+        """dict.get() 기본값 테스트"""
+        context = {"types": {"a": "대면사인회"}}
+        result = evaluate_expression('types.get("x", "기타")', context)
+        assert result == "기타"
+    
+    def test_dict_get_with_variable_key(self):
+        """dict.get() 변수 키 테스트"""
+        context = {"types": {"a": "대면사인회", "b": "포토"}, "key": "b"}
+        result = evaluate_expression('types.get(key, "기타")', context)
+        assert result == "포토"
+    
+    def test_dict_keys(self):
+        """dict.keys() 테스트"""
+        context = {"types": {"a": 1, "b": 2}}
+        result = evaluate_expression("types.keys()", context)
+        assert set(result) == {"a", "b"}
+    
+    def test_dict_values(self):
+        """dict.values() 테스트"""
+        context = {"types": {"a": 1, "b": 2}}
+        result = evaluate_expression("types.values()", context)
+        assert set(result) == {1, 2}
+    
+    def test_string_upper(self):
+        """str.upper() 테스트"""
+        context = {"text": "hello"}
+        result = evaluate_expression("text.upper()", context)
+        assert result == "HELLO"
+    
+    def test_string_lower(self):
+        """str.lower() 테스트"""
+        context = {"text": "HELLO"}
+        result = evaluate_expression("text.lower()", context)
+        assert result == "hello"
+    
+    def test_string_strip(self):
+        """str.strip() 테스트"""
+        context = {"text": "  hello  "}
+        result = evaluate_expression("text.strip()", context)
+        assert result == "hello"
+    
+    def test_string_split(self):
+        """str.split() 테스트"""
+        context = {"text": "a,b,c"}
+        result = evaluate_expression('text.split(",")', context)
+        assert result == ["a", "b", "c"]
+    
+    def test_string_replace(self):
+        """str.replace() 테스트"""
+        context = {"text": "hello world"}
+        result = evaluate_expression('text.replace("world", "python")', context)
+        assert result == "hello python"
+    
+    def test_method_on_none(self):
+        """None 객체에 메서드 호출 테스트"""
+        context = {"obj": None}
+        result = evaluate_expression('obj.get("x")', context)
+        assert result is None
+
+
+class TestDynamicSubscript:
+    """Tests for dynamic subscript evaluation"""
+    
+    def test_subscript_with_attribute_key(self):
+        """속성 값을 키로 사용하는 subscript 테스트"""
+        context = {
+            "types": {"a": "대면사인회", "b": "포토"},
+            "item": {"type": "a"}
+        }
+        result = evaluate_expression("types[item.type]", context)
+        assert result == "대면사인회"
+    
+    def test_subscript_missing_variable_key(self):
+        """존재하지 않는 변수를 키로 사용 테스트"""
+        context = {"types": {"a": "대면사인회"}}
+        result = evaluate_expression("types[unknown_key]", context)
+        assert result is None

@@ -114,6 +114,82 @@ for 루프 내에서 `loop` 객체를 통해 현재 반복 상태에 접근할 �
 - 논리 연산: `{% if a and b %}`, `{% if a or b %}`
 - 포함 여부: `{% if item in items %}`, `{% if item not in items %}`
 
+#### set 변수 할당
+
+템플릿 내에서 변수를 정의합니다.
+
+```
+{% set 변수명 = 값 %}
+```
+
+**기본 사용:**
+
+| A열 |
+|-----|
+| {% set discount = 0.1 %} |
+| {% set message = "안녕하세요" %} |
+| 할인율: {{ discount }}, 메시지: {{ message }} |
+
+**딕셔너리 매핑:**
+
+타입 코드를 의미 있는 텍스트로 변환할 때 유용합니다.
+
+| A열 |
+|-----|
+| {% set event_types = {"a": "대면사인회", "b": "포토", "c": "게임회"} %} |
+| {% set event_name = event_types.get(event_type, "기타") %} |
+| 이벤트: {{ event_name }} |
+
+**조건부 할당 (인라인 if):**
+
+| A열 |
+|-----|
+| {% set status_text = "완료" if is_done else "진행중" %} |
+| 상태: {{ status_text }} |
+
+**스코프 규칙:**
+
+set으로 정의한 변수의 스코프는 다음 규칙을 따릅니다:
+
+| 블록 유형 | 스코프 | 설명 |
+|-----------|--------|------|
+| if 블록 | 없음 | 내부에서 설정한 변수가 외부에서 접근 가능 |
+| for 루프 | 있음 | 내부에서 설정한 변수가 루프 외부에서 접근 불가 |
+
+**if 블록 내에서 (스코프 없음):**
+
+| A열 |
+|-----|
+| {% if status == "active" %} |
+| {% set label = "활성" %} |
+| {% else %} |
+| {% set label = "비활성" %} |
+| {% endif %} |
+| 결과: {{ label }} |
+
+위 예시에서 `{{ label }}`은 정상적으로 "활성" 또는 "비활성"을 출력합니다.
+
+**for 루프 내에서 (스코프 있음):**
+
+| A열 |
+|-----|
+| {% for item in items %} |
+| {% set found = true %} |
+| {% endfor %} |
+| 결과: {{ found }} |
+
+위 예시에서 `{{ found }}`는 루프 외부에서 undefined로 `{{ found }}` 그대로 출력됩니다.
+
+**다른 제어문과 함께 사용:**
+
+| A열 | B열 | C열 |
+|-----|-----|-----|
+| {% set categories = {"A": "전자제품", "B": "의류"} %} | | |
+| {% for item in items %} | | |
+| {% set category_name = categories.get(item.category, "기타") %} | | |
+| | {{ item.name }} | {{ category_name }} |
+| {% endfor %} | | |
+
 ### 주석 (Comment)
 
 주석은 `{# #}` 안에 작성합니다. 렌더링 후 해당 행은 삭제됩니다.

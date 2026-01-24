@@ -2271,6 +2271,224 @@ class TestInplaceRendering:
             os.unlink(template_path)
 
 
+class TestSetStatement:
+    """Tests for set statement in templates"""
+    
+    def test_set_simple_value(self):
+        """단순 값 할당 테스트"""
+        template_path = create_template([
+            ["{% set discount = 0.1 %}"],
+            ["할인율: {{ discount }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {})
+            result = read_output(output_path)
+            assert result == [["할인율: 0.1"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_string_value(self):
+        """문자열 값 할당 테스트"""
+        template_path = create_template([
+            ['{% set message = "안녕하세요" %}'],
+            ["{{ message }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {})
+            result = read_output(output_path)
+            assert result == [["안녕하세요"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_dict_literal(self):
+        """딕셔너리 리터럴 할당 테스트"""
+        template_path = create_template([
+            ['{% set types = {"a": "대면사인회", "b": "포토", "c": "게임회"} %}'],
+            ['{% set event_name = types.get(event_type, "기타") %}'],
+            ["이벤트: {{ event_name }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"event_type": "a"})
+            result = read_output(output_path)
+            assert result == [["이벤트: 대면사인회"]]
+            
+            render_template_to_file(template_path, output_path, {"event_type": "b"})
+            result = read_output(output_path)
+            assert result == [["이벤트: 포토"]]
+            
+            render_template_to_file(template_path, output_path, {"event_type": "unknown"})
+            result = read_output(output_path)
+            assert result == [["이벤트: 기타"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_with_expression(self):
+        """표현식으로 할당 테스트"""
+        template_path = create_template([
+            ["{% set total = price * quantity %}"],
+            ["총액: {{ total }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"price": 1000, "quantity": 3})
+            result = read_output(output_path)
+            assert result == [["총액: 3000"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_with_ternary(self):
+        """삼항 연산자로 할당 테스트"""
+        template_path = create_template([
+            ['{% set label = "활성" if is_active else "비활성" %}'],
+            ["상태: {{ label }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"is_active": True})
+            result = read_output(output_path)
+            assert result == [["상태: 활성"]]
+            
+            render_template_to_file(template_path, output_path, {"is_active": False})
+            result = read_output(output_path)
+            assert result == [["상태: 비활성"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_in_for_loop(self):
+        """for 루프 내에서 set 사용 테스트"""
+        template_path = create_template([
+            ['{% set categories = {"A": "전자제품", "B": "의류"} %}'],
+            ["{% for item in items %}"],
+            ['{% set category_name = categories.get(item.category, "기타") %}'],
+            ["{{ item.name }}: {{ category_name }}"],
+            ["{% endfor %}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {
+                "items": [
+                    {"name": "TV", "category": "A"},
+                    {"name": "셔츠", "category": "B"},
+                    {"name": "기타제품", "category": "C"}
+                ]
+            }
+            render_template_to_file(template_path, output_path, data)
+            result = read_output(output_path)
+            assert result == [
+                ["TV: 전자제품"],
+                ["셔츠: 의류"],
+                ["기타제품: 기타"]
+            ]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_in_if_statement(self):
+        """if 문 내에서 set 사용 테스트 (스코프 확인)"""
+        template_path = create_template([
+            ['{% if status == "active" %}'],
+            ['{% set label = "활성 상태" %}'],
+            ["{% else %}"],
+            ['{% set label = "비활성 상태" %}'],
+            ["{% endif %}"],
+            ["결과: {{ label }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"status": "active"})
+            result = read_output(output_path)
+            assert result == [["결과: 활성 상태"]]
+            
+            render_template_to_file(template_path, output_path, {"status": "inactive"})
+            result = read_output(output_path)
+            assert result == [["결과: 비활성 상태"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_dict_subscript_access(self):
+        """딕셔너리 대괄호 접근 테스트"""
+        template_path = create_template([
+            ['{% set types = {"a": "대면사인회", "b": "포토"} %}'],
+            ['{% set name = types[key] %}'],
+            ["{{ name }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"key": "a"})
+            result = read_output(output_path)
+            assert result == [["대면사인회"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_row_removed(self):
+        """set 행이 출력에서 제거되는지 테스트"""
+        template_path = create_template([
+            ["헤더"],
+            ["{% set x = 10 %}"],
+            ["{% set y = 20 %}"],
+            ["푸터"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {})
+            result = read_output(output_path)
+            # set 행들은 제거됨
+            assert result == [["헤더"], ["푸터"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_set_overwrite_variable(self):
+        """기존 변수 덮어쓰기 테스트"""
+        template_path = create_template([
+            ["{% set name = original_name %}"],
+            ["원본: {{ name }}"],
+            ['{% set name = "변경된 값" %}'],
+            ["변경: {{ name }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"original_name": "원래 값"})
+            result = read_output(output_path)
+            assert result == [
+                ["원본: 원래 값"],
+                ["변경: 변경된 값"]
+            ]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+
+
 class TestRenderTemplateToFile:
     """Tests for render_template_to_file function"""
     

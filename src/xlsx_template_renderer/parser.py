@@ -19,6 +19,7 @@ class TokenType(Enum):
     ELIF = auto()           # {% elif condition %}
     ELSE = auto()           # {% else %}
     IF_END = auto()         # {% endif %}
+    SET = auto()            # {% set var = value %}
     COMMENT = auto()        # {# comment #}
     INCLUDE_SECTION = auto()    # {% include_section "sheet" "name" %}
     DEFINE_SECTION = auto()     # {# define_section:name #}
@@ -35,6 +36,8 @@ class Token:
     loop_iter: str = ""     # Loop iterable expression (for for loops)
     include_sheet: str = "" # Sheet name for include_section
     section_name: str = ""  # Section name for include_section/define_section
+    set_var: str = ""       # Variable name for set statement
+    set_value: str = ""     # Value expression for set statement
 
 
 # Regex patterns
@@ -49,6 +52,7 @@ IF_START_PATTERN = re.compile(r'^if\s+(.+)$')
 ELIF_PATTERN = re.compile(r'^elif\s+(.+)$')
 ELSE_PATTERN = re.compile(r'^else$')
 IF_END_PATTERN = re.compile(r'^endif$')
+SET_PATTERN = re.compile(r'^set\s+(\w+)\s*=\s*(.+)$')
 
 # Section patterns
 INCLUDE_SECTION_PATTERN = re.compile(r'^include_section\s+"([^"]+)"\s+"([^"]+)"$')
@@ -152,6 +156,16 @@ def _parse_control_statement(content: str, statement: str) -> Optional[Token]:
             content=content,
             include_sheet=include_match.group(1),
             section_name=include_match.group(2)
+        )
+    
+    # {% set var = value %}
+    set_match = SET_PATTERN.match(statement)
+    if set_match:
+        return Token(
+            type=TokenType.SET,
+            content=content,
+            set_var=set_match.group(1),
+            set_value=set_match.group(2).strip()
         )
     
     return None

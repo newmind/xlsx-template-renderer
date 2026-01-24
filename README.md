@@ -113,7 +113,7 @@ pytest
 - [x] `loop.length`
 
 ### 기타 제어문
-- [ ] `{% set var = value %}` (변수 할당)
+- [x] `{% set var = value %}` (변수 할당)
 - [ ] `{% macro %}...{% endmacro %}` (매크로)
 - [ ] `{% include %}` (템플릿 포함)
 - [ ] `{% block %}...{% endblock %}` (블록 상속)
@@ -122,9 +122,19 @@ pytest
 - [x] 삼항 연산자: `{{ 'yes' if condition else 'no' }}`
 - [ ] 나머지 연산: `{{ value % 2 }}`
 - [ ] 거듭제곱: `{{ value ** 2 }}`
-- [ ] 문자열 키 접근: `{{ dict['key-name'] }}`
+- [x] 문자열 키 접근: `{{ dict['key-name'] }}`
 
 ## 버전 히스토리
+
+### v0.7.0 (2026-01-24)
+- **set 변수 할당 기능 추가**: `{% set var = value %}`
+  - 딕셔너리 리터럴: `{% set types = {"a": "대면사인회", "b": "포토"} %}`
+  - dict.get() 메서드: `{% set name = types.get(key, "기타") %}`
+  - 인라인 if: `{% set label = "활성" if active else "비활성" %}`
+- **표현식 기능 확장**
+  - 딕셔너리/리스트 리터럴 지원
+  - 문자열 키 접근: `{{ dict["key"] }}`, `{{ dict[var] }}`
+  - 메서드 호출: `dict.get()`, `str.upper()`, `str.lower()` 등
 
 ### v0.3.0 (2026-01-23)
 - **[Breaking Change]** 패키지 네이밍 규칙 수정

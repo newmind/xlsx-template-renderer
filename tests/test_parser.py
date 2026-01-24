@@ -562,6 +562,70 @@ class TestIncludeSection:
         assert token is None
 
 
+class TestSetStatement:
+    """Tests for set statement parsing"""
+    
+    def test_set_simple_value(self):
+        """단순 값 할당 테스트"""
+        token = parse_cell("{% set x = 10 %}")
+        assert token is not None
+        assert token.type == TokenType.SET
+        assert token.set_var == "x"
+        assert token.set_value == "10"
+    
+    def test_set_string_value(self):
+        """문자열 값 할당 테스트"""
+        token = parse_cell('{% set message = "안녕하세요" %}')
+        assert token is not None
+        assert token.type == TokenType.SET
+        assert token.set_var == "message"
+        assert token.set_value == '"안녕하세요"'
+    
+    def test_set_dict_literal(self):
+        """딕셔너리 리터럴 할당 테스트"""
+        token = parse_cell('{% set types = {"a": "대면사인회", "b": "포토"} %}')
+        assert token is not None
+        assert token.type == TokenType.SET
+        assert token.set_var == "types"
+        assert '"a": "대면사인회"' in token.set_value
+    
+    def test_set_expression(self):
+        """표현식 할당 테스트"""
+        token = parse_cell("{% set total = price * quantity %}")
+        assert token is not None
+        assert token.type == TokenType.SET
+        assert token.set_var == "total"
+        assert token.set_value == "price * quantity"
+    
+    def test_set_ternary(self):
+        """삼항 연산자 할당 테스트"""
+        token = parse_cell('{% set label = "활성" if is_active else "비활성" %}')
+        assert token is not None
+        assert token.type == TokenType.SET
+        assert token.set_var == "label"
+        assert "if is_active else" in token.set_value
+    
+    def test_set_method_call(self):
+        """메서드 호출 할당 테스트"""
+        token = parse_cell('{% set name = types.get(key, "기타") %}')
+        assert token is not None
+        assert token.type == TokenType.SET
+        assert token.set_var == "name"
+        assert "types.get" in token.set_value
+    
+    def test_set_with_indentation(self):
+        """들여쓰기가 있는 set문 테스트"""
+        token = parse_cell("  {% set x = 10 %}")
+        assert token is not None
+        assert token.type == TokenType.SET
+        assert token.set_var == "x"
+    
+    def test_set_is_control_statement(self):
+        """set이 제어문으로 인식되는지 테스트"""
+        assert is_control_statement("{% set x = 10 %}") is True
+        assert is_control_statement('{% set types = {"a": 1} %}') is True
+
+
 class TestDefineSectionMarkers:
     """Tests for define_section markers"""
     
