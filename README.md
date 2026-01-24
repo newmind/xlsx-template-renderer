@@ -23,19 +23,19 @@ Jinja2 스타일 문법을 사용하여 xlsx 템플릿을 렌더링하는 Python
 pip install git+https://github.com/newmind/xlsx-template-renderer.git
 
 # 특정 버전 (권장)
-pip install git+https://github.com/newmind/xlsx-template-renderer.git@v0.3.0
+pip install git+https://github.com/newmind/xlsx-template-renderer.git@v0.6.0
 ```
 
 **requirements.txt에 추가:**
 ```
-xlsx-template-renderer @ git+https://github.com/newmind/xlsx-template-renderer.git@v0.3.0
+xlsx-template-renderer @ git+https://github.com/newmind/xlsx-template-renderer.git@v0.6.0
 ```
 
 **pyproject.toml에 추가:**
 ```toml
 [project]
 dependencies = [
-    "xlsx-template-renderer @ git+https://github.com/newmind/xlsx-template-renderer.git@v0.3.0",
+    "xlsx-template-renderer @ git+https://github.com/newmind/xlsx-template-renderer.git@v0.6.0",
 ]
 ```
 

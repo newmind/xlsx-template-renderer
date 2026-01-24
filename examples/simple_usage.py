@@ -6,7 +6,7 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 
-from xlsx_template_renderer import render_template
+from xlsx_template_renderer import render_template_to_file
 
 
 def create_sample_template():
@@ -131,7 +131,7 @@ def main():
     # 참고: 현재 구현에서는 루프 인덱스 자동 지원이 없음
     
     # 렌더링 실행
-    render_template(str(template_path), str(output_path), data)
+    render_template_to_file(str(template_path), str(output_path), data)
     print(f"렌더링 완료: {output_path}")
     
     # 결과 확인

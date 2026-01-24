@@ -15,7 +15,7 @@ from openpyxl.styles import Font, PatternFill, Border, Side, Alignment  # type: 
 from openpyxl.cell.rich_text import CellRichText, TextBlock  # type: ignore[import-untyped]
 from openpyxl.cell.text import InlineFont  # type: ignore[import-untyped]
 
-from xlsx_template_renderer import render_template
+from xlsx_template_renderer import render_template_to_file
 
 
 def create_advanced_template():
@@ -290,7 +290,7 @@ def main():
     }
     
     # 렌더링 실행
-    render_template(str(template_path), str(output_path), data)
+    render_template_to_file(str(template_path), str(output_path), data)
     print(f"렌더링 완료: {output_path}")
     
     # 결과 확인

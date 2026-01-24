@@ -9,7 +9,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.cell.rich_text import CellRichText, TextBlock
 from openpyxl.cell.text import InlineFont
 
-from xlsx_template_renderer import render_template
+from xlsx_template_renderer import render_template, render_template_to_file
 from xlsx_template_renderer.exceptions import TemplateSyntaxError
 
 
@@ -55,7 +55,7 @@ class TestVariableSubstitution:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"name": "홍길동"})
+            render_template_to_file(template_path, output_path, {"name": "홍길동"})
             result = read_output(output_path)
             assert result == [["홍길동"]]
         finally:
@@ -70,7 +70,7 @@ class TestVariableSubstitution:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"name": "홍길동"})
+            render_template_to_file(template_path, output_path, {"name": "홍길동"})
             result = read_output(output_path)
             assert result == [["이름: 홍길동님"]]
         finally:
@@ -85,7 +85,7 @@ class TestVariableSubstitution:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"name": "홍길동", "age": 25})
+            render_template_to_file(template_path, output_path, {"name": "홍길동", "age": 25})
             result = read_output(output_path)
             assert result == [["홍길동 (25세)"]]
         finally:
@@ -100,7 +100,7 @@ class TestVariableSubstitution:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             assert result == [["{{ unknown }}"]]
         finally:
@@ -115,7 +115,7 @@ class TestVariableSubstitution:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"user": {"name": "홍길동"}})
+            render_template_to_file(template_path, output_path, {"user": {"name": "홍길동"}})
             result = read_output(output_path)
             assert result == [["홍길동"]]
         finally:
@@ -130,7 +130,7 @@ class TestVariableSubstitution:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"price": 1000})
+            render_template_to_file(template_path, output_path, {"price": 1000})
             result = read_output(output_path)
             assert result == [[1100.0]]
         finally:
@@ -151,7 +151,7 @@ class TestForLoop:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": ["A", "B", "C"]})
+            render_template_to_file(template_path, output_path, {"items": ["A", "B", "C"]})
             result = read_output(output_path)
             assert result == [
                 [None, "A"],
@@ -178,7 +178,7 @@ class TestForLoop:
                     {"name": "상품B", "price": 2000}
                 ]
             }
-            render_template(template_path, output_path, data)
+            render_template_to_file(template_path, output_path, data)
             result = read_output(output_path)
             assert result == [
                 [None, "상품A", 1000],
@@ -200,7 +200,7 @@ class TestForLoop:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": []})
+            render_template_to_file(template_path, output_path, {"items": []})
             result = read_output(output_path)
             assert result == [["Header"], ["Footer"]]
         finally:
@@ -226,7 +226,7 @@ class TestForLoop:
                     {"name": "기획팀", "members": ["박지민"]}
                 ]
             }
-            render_template(template_path, output_path, data)
+            render_template_to_file(template_path, output_path, data)
             result = read_output(output_path)
             assert result == [
                 [None, "개발팀"],
@@ -253,7 +253,7 @@ class TestIfStatement:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"show": True})
+            render_template_to_file(template_path, output_path, {"show": True})
             result = read_output(output_path)
             assert result == [[None, "표시됨"]]
         finally:
@@ -270,7 +270,7 @@ class TestIfStatement:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"show": False})
+            render_template_to_file(template_path, output_path, {"show": False})
             result = read_output(output_path)
             assert result == []
         finally:
@@ -289,7 +289,7 @@ class TestIfStatement:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"show": False})
+            render_template_to_file(template_path, output_path, {"show": False})
             result = read_output(output_path)
             assert result == [[None, "NO"]]
         finally:
@@ -311,15 +311,15 @@ class TestIfStatement:
         
         try:
             # Test status == 1
-            render_template(template_path, output_path, {"status": 1})
+            render_template_to_file(template_path, output_path, {"status": 1})
             assert read_output(output_path) == [[None, "상태1"]]
             
             # Test status == 2
-            render_template(template_path, output_path, {"status": 2})
+            render_template_to_file(template_path, output_path, {"status": 2})
             assert read_output(output_path) == [[None, "상태2"]]
             
             # Test else
-            render_template(template_path, output_path, {"status": 3})
+            render_template_to_file(template_path, output_path, {"status": 3})
             assert read_output(output_path) == [[None, "기타"]]
         finally:
             os.unlink(template_path)
@@ -339,7 +339,7 @@ class TestComments:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             assert result == [["Header"], ["Footer"]]
         finally:
@@ -364,7 +364,7 @@ class TestStylePreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"name": "홍길동"})
+            render_template_to_file(template_path, output_path, {"name": "홍길동"})
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out.active
@@ -390,7 +390,7 @@ class TestStylePreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"value": "테스트"})
+            render_template_to_file(template_path, output_path, {"value": "테스트"})
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out.active
@@ -421,7 +421,7 @@ class TestStylePreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"value": "테두리 테스트"})
+            render_template_to_file(template_path, output_path, {"value": "테두리 테스트"})
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out.active
@@ -449,7 +449,7 @@ class TestStylePreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"value": "정렬 테스트"})
+            render_template_to_file(template_path, output_path, {"value": "정렬 테스트"})
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out.active
@@ -476,7 +476,7 @@ class TestStylePreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"price": 1234567})
+            render_template_to_file(template_path, output_path, {"price": 1234567})
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out.active
@@ -516,7 +516,7 @@ class TestStylePreservation:
                     {"name": "상품C", "price": 3000}
                 ]
             }
-            render_template(template_path, output_path, data)
+            render_template_to_file(template_path, output_path, data)
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out.active
@@ -557,7 +557,7 @@ class TestStylePreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"value": "복합 스타일"})
+            render_template_to_file(template_path, output_path, {"value": "복합 스타일"})
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out.active
@@ -605,7 +605,7 @@ class TestComplexTemplate:
                 ],
                 "total": 4000
             }
-            render_template(template_path, output_path, data)
+            render_template_to_file(template_path, output_path, data)
             result = read_output(output_path)
             
             assert result == [
@@ -643,7 +643,7 @@ class TestRichTextPreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"name": "홍길동"})
+            render_template_to_file(template_path, output_path, {"name": "홍길동"})
             
             wb_out = load_workbook(output_path, rich_text=True)
             ws_out = wb_out.active
@@ -687,7 +687,7 @@ class TestRichTextPreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"name": "김철수", "title": "개발자"})
+            render_template_to_file(template_path, output_path, {"name": "김철수", "title": "개발자"})
             
             wb_out = load_workbook(output_path, rich_text=True)
             ws_out = wb_out.active
@@ -737,7 +737,7 @@ class TestRichTextPreservation:
                     {"name": "오렌지"}
                 ]
             }
-            render_template(template_path, output_path, data)
+            render_template_to_file(template_path, output_path, data)
             
             wb_out = load_workbook(output_path, rich_text=True)
             ws_out = wb_out.active
@@ -776,7 +776,7 @@ class TestRichTextPreservation:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             
             wb_out = load_workbook(output_path, rich_text=True)
             ws_out = wb_out.active
@@ -806,7 +806,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"data": "test"})
+            render_template_to_file(template_path, output_path, {"data": "test"})
             result = read_output(output_path)
             assert result == []
         finally:
@@ -825,7 +825,7 @@ class TestEdgeCases:
         
         try:
             with pytest.raises(TemplateSyntaxError) as exc_info:
-                render_template(template_path, output_path, {"items": [1, 2, 3]})
+                render_template_to_file(template_path, output_path, {"items": [1, 2, 3]})
             assert "endfor" in str(exc_info.value).lower()
         finally:
             os.unlink(template_path)
@@ -843,7 +843,7 @@ class TestEdgeCases:
         
         try:
             with pytest.raises(TemplateSyntaxError) as exc_info:
-                render_template(template_path, output_path, {"show": True})
+                render_template_to_file(template_path, output_path, {"show": True})
             assert "endif" in str(exc_info.value).lower()
         finally:
             os.unlink(template_path)
@@ -859,7 +859,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             # 알 수 없는 control statement는 무시됨
             assert result == [["일반 행"]]
@@ -878,7 +878,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             # 고아 endfor는 무시됨
             assert result == [["일반 행"], ["또 다른 행"]]
@@ -897,7 +897,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             # 고아 endif는 무시됨
             assert result == [["일반 행"], ["또 다른 행"]]
@@ -916,7 +916,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"condition": True})
+            render_template_to_file(template_path, output_path, {"condition": True})
             result = read_output(output_path)
             # 고아 elif는 무시됨
             assert result == [["일반 행"], ["또 다른 행"]]
@@ -935,7 +935,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             # 고아 else는 무시됨
             assert result == [["일반 행"], ["또 다른 행"]]
@@ -956,7 +956,7 @@ class TestEdgeCases:
         
         try:
             # items가 context에 없음 -> None -> 빈 리스트로 처리
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             assert result == [["Footer"]]
         finally:
@@ -981,7 +981,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"name": "홍길동", "title": "제목"})
+            render_template_to_file(template_path, output_path, {"name": "홍길동", "title": "제목"})
             
             wb_out = load_workbook(output_path)
             assert wb_out["Sheet1"]['A1'].value == "홍길동"
@@ -1002,7 +1002,7 @@ class TestEdgeCases:
         
         try:
             # value가 없으면 None, 비교 실패 -> False
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             assert result == []
         finally:
@@ -1020,7 +1020,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"count": 5})
+            render_template_to_file(template_path, output_path, {"count": 5})
             result = read_output(output_path)
             assert result == [["5 이상"]]
         finally:
@@ -1038,7 +1038,7 @@ class TestEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"count": 5})
+            render_template_to_file(template_path, output_path, {"count": 5})
             result = read_output(output_path)
             assert result == [["5 이하"]]
         finally:
@@ -1060,7 +1060,7 @@ class TestLoopVariables:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": ["A", "B", "C"]})
+            render_template_to_file(template_path, output_path, {"items": ["A", "B", "C"]})
             result = read_output(output_path)
             assert result == [
                 [1, "A"],
@@ -1082,7 +1082,7 @@ class TestLoopVariables:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": ["A", "B", "C"]})
+            render_template_to_file(template_path, output_path, {"items": ["A", "B", "C"]})
             result = read_output(output_path)
             assert result == [
                 [0, "A"],
@@ -1108,7 +1108,7 @@ class TestLoopVariables:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": ["A", "B", "C"]})
+            render_template_to_file(template_path, output_path, {"items": ["A", "B", "C"]})
             result = read_output(output_path)
             assert result == [
                 ["첫 번째: A"],
@@ -1134,7 +1134,7 @@ class TestLoopVariables:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": ["A", "B", "C"]})
+            render_template_to_file(template_path, output_path, {"items": ["A", "B", "C"]})
             result = read_output(output_path)
             assert result == [
                 ["A"],
@@ -1156,7 +1156,7 @@ class TestLoopVariables:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": ["A", "B", "C"]})
+            render_template_to_file(template_path, output_path, {"items": ["A", "B", "C"]})
             result = read_output(output_path)
             assert result == [
                 ["A (1/3)"],
@@ -1178,7 +1178,7 @@ class TestLoopVariables:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": ["only"]})
+            render_template_to_file(template_path, output_path, {"items": ["only"]})
             result = read_output(output_path)
             assert result == [["first=True, last=True"]]
         finally:
@@ -1198,7 +1198,7 @@ class TestFiltersInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             result = read_output(output_path)
             assert result == [["N/A"]]
         finally:
@@ -1214,7 +1214,7 @@ class TestFiltersInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"items": [1, 2, 3, 4, 5]})
+            render_template_to_file(template_path, output_path, {"items": [1, 2, 3, 4, 5]})
             result = read_output(output_path)
             assert result == [["총 5건"]]
         finally:
@@ -1230,7 +1230,7 @@ class TestFiltersInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"tags": ["python", "excel", "template"]})
+            render_template_to_file(template_path, output_path, {"tags": ["python", "excel", "template"]})
             result = read_output(output_path)
             assert result == [["python, excel, template"]]
         finally:
@@ -1250,7 +1250,7 @@ class TestTernaryInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"is_active": True})
+            render_template_to_file(template_path, output_path, {"is_active": True})
             result = read_output(output_path)
             assert result == [["active"]]
         finally:
@@ -1266,7 +1266,7 @@ class TestTernaryInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"is_active": False})
+            render_template_to_file(template_path, output_path, {"is_active": False})
             result = read_output(output_path)
             assert result == [["inactive"]]
         finally:
@@ -1288,11 +1288,11 @@ class TestLogicalOperatorsInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"a": True, "b": True})
+            render_template_to_file(template_path, output_path, {"a": True, "b": True})
             result = read_output(output_path)
             assert result == [["둘 다 참"]]
             
-            render_template(template_path, output_path, {"a": True, "b": False})
+            render_template_to_file(template_path, output_path, {"a": True, "b": False})
             result = read_output(output_path)
             assert result == []
         finally:
@@ -1310,7 +1310,7 @@ class TestLogicalOperatorsInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"a": False, "b": True})
+            render_template_to_file(template_path, output_path, {"a": False, "b": True})
             result = read_output(output_path)
             assert result == [["하나라도 참"]]
         finally:
@@ -1328,7 +1328,7 @@ class TestLogicalOperatorsInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"is_deleted": False})
+            render_template_to_file(template_path, output_path, {"is_deleted": False})
             result = read_output(output_path)
             assert result == [["삭제되지 않음"]]
         finally:
@@ -1346,7 +1346,7 @@ class TestLogicalOperatorsInTemplate:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {
+            render_template_to_file(template_path, output_path, {
                 "status": "active",
                 "valid_statuses": ["active", "pending"]
             })
@@ -1373,7 +1373,7 @@ class TestRendererEdgeCases:
         
         try:
             wb.save(template_path)
-            render_template(template_path, output_path, {})
+            render_template_to_file(template_path, output_path, {})
             # 정상적으로 처리되어야 함
             assert os.path.exists(output_path)
         finally:
@@ -1407,7 +1407,7 @@ class TestRendererEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"outer": True, "inner": True})
+            render_template_to_file(template_path, output_path, {"outer": True, "inner": True})
             result = read_output(output_path)
             assert result == [["외부 조건"], ["내부 조건"]]
         finally:
@@ -1428,7 +1428,7 @@ class TestRendererEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {"outer": False, "inner": True})
+            render_template_to_file(template_path, output_path, {"outer": False, "inner": True})
             result = read_output(output_path)
             assert result == []
         finally:
@@ -1452,7 +1452,7 @@ class TestRendererEdgeCases:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {
+            render_template_to_file(template_path, output_path, {
                 "level1": True, 
                 "level2": True, 
                 "level3": True
@@ -1483,7 +1483,7 @@ class TestRendererEdgeCases:
         
         try:
             wb.save(template_path)
-            render_template(template_path, output_path, {"name": "World"})
+            render_template_to_file(template_path, output_path, {"name": "World"})
             
             # 결과 확인
             result_wb = load_workbook(output_path, rich_text=True)
@@ -1519,7 +1519,7 @@ class TestRendererEdgeCases:
         
         try:
             wb.save(template_path)
-            render_template(template_path, output_path, {"name": "홍길동"})
+            render_template_to_file(template_path, output_path, {"name": "홍길동"})
             
             result_wb = load_workbook(output_path, rich_text=True)
             result_ws = result_wb.active
@@ -1629,7 +1629,7 @@ class TestControlStatementStyles:
             }
             
             # 렌더링 실행
-            render_template(str(template_path), str(output_path), data)
+            render_template_to_file(str(template_path), str(output_path), data)
             
             # 결과 확인 - 제어문 행들은 삭제되고 데이터만 남아야 함
             wb_out = load_workbook(output_path)
@@ -1685,7 +1685,7 @@ class TestControlStatementStyles:
             }
             
             # 렌더링 실행
-            render_template(str(template_path), str(output_path), data)
+            render_template_to_file(str(template_path), str(output_path), data)
             
             # 결과 확인
             wb_out = load_workbook(output_path)
@@ -1752,7 +1752,7 @@ class TestControlStatementStyles:
             }
             
             # 렌더링 실행
-            render_template(str(template_path), str(output_path), data)
+            render_template_to_file(str(template_path), str(output_path), data)
             
             # 결과 확인
             wb_out = load_workbook(output_path)
@@ -1790,7 +1790,7 @@ class TestSheetFiltering:
         
         try:
             # Sheet1과 Sheet3만 처리
-            render_template(
+            render_template_to_file(
                 template_path, 
                 output_path, 
                 {"value1": "처리됨1", "value2": "처리됨2", "value3": "처리됨3"},
@@ -1824,7 +1824,7 @@ class TestSheetFiltering:
         
         try:
             # 존재하지 않는 시트와 존재하는 시트 혼합
-            render_template(
+            render_template_to_file(
                 template_path, 
                 output_path, 
                 {"name": "홍길동"},
@@ -1857,7 +1857,7 @@ class TestSheetFiltering:
         
         try:
             # sheets 파라미터 없이 호출 (기존 동작)
-            render_template(template_path, output_path, {"name": "홍길동", "title": "제목"})
+            render_template_to_file(template_path, output_path, {"name": "홍길동", "title": "제목"})
             
             wb_out = load_workbook(output_path)
             assert wb_out["Sheet1"]['A1'].value == "홍길동"
@@ -1895,7 +1895,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out["메인"]
@@ -1929,7 +1929,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {
+            render_template_to_file(template_path, output_path, {
                 "company": "메이크스타",
                 "date": "2024-01-20"
             }, sheets=["메인"])
@@ -1966,7 +1966,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out["메인"]
@@ -1999,7 +1999,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out["메인"]
@@ -2032,7 +2032,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {
+            render_template_to_file(template_path, output_path, {
                 "items": ["사과", "바나나", "오렌지"]
             }, sheets=["메인"])
             
@@ -2071,13 +2071,13 @@ class TestIncludeSection:
         
         try:
             # show_header = True
-            render_template(template_path, output_path, {"show_header": True}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {"show_header": True}, sheets=["메인"])
             wb_out = load_workbook(output_path)
             assert wb_out["메인"]['A1'].value == "헤더 내용"
             assert wb_out["메인"]['A2'].value == "본문"
             
             # show_header = False
-            render_template(template_path, output_path, {"show_header": False}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {"show_header": False}, sheets=["메인"])
             wb_out = load_workbook(output_path)
             assert wb_out["메인"]['A1'].value == "본문"
         finally:
@@ -2101,7 +2101,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out["메인"]
@@ -2140,7 +2140,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out["메인"]
@@ -2181,7 +2181,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out["메인"]
@@ -2212,7 +2212,7 @@ class TestIncludeSection:
         output_path = template_path.replace('.xlsx', '_out.xlsx')
         
         try:
-            render_template(template_path, output_path, {}, sheets=["메인"])
+            render_template_to_file(template_path, output_path, {}, sheets=["메인"])
             
             wb_out = load_workbook(output_path)
             ws_out = wb_out["메인"]
@@ -2220,6 +2220,103 @@ class TestIncludeSection:
             # define_section 마커들은 제거되고 내용만 남음
             assert ws_out['A1'].value == "테스트 내용"
             assert ws_out['A2'].value == "일반 행"
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+
+
+class TestInplaceRendering:
+    """Tests for in-place rendering"""
+    
+    def test_inplace_rendering(self):
+        """inplace 렌더링 테스트 - 원본 파일 직접 수정"""
+        template_path = create_template([
+            ["{{ name }}"]
+        ])
+        
+        try:
+            render_template(template_path, {"name": "홍길동"})
+            result = read_output(template_path)
+            assert result == [["홍길동"]]
+        finally:
+            os.unlink(template_path)
+    
+    def test_inplace_with_multiple_variables(self):
+        """inplace 렌더링 - 여러 변수"""
+        template_path = create_template([
+            ["{{ name }} - {{ title }}"]
+        ])
+        
+        try:
+            render_template(template_path, {"name": "홍길동", "title": "개발자"})
+            result = read_output(template_path)
+            assert result == [["홍길동 - 개발자"]]
+        finally:
+            os.unlink(template_path)
+    
+    def test_inplace_with_for_loop(self):
+        """inplace 렌더링 - for 루프"""
+        template_path = create_template([
+            ["{% for item in items %}"],
+            ["{{ item }}"],
+            ["{% endfor %}"]
+        ])
+        
+        try:
+            render_template(template_path, {"items": ["A", "B", "C"]})
+            result = read_output(template_path)
+            assert result == [["A"], ["B"], ["C"]]
+        finally:
+            os.unlink(template_path)
+
+
+class TestRenderTemplateToFile:
+    """Tests for render_template_to_file function"""
+    
+    def test_render_to_file_creates_new_file(self):
+        """render_template_to_file - 새 파일 생성"""
+        template_path = create_template([
+            ["{{ value }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"value": "테스트"})
+            
+            # 원본은 변경되지 않음
+            result_template = read_output(template_path)
+            assert result_template == [["{{ value }}"]]
+            
+            # 출력 파일에 렌더링됨
+            result_output = read_output(output_path)
+            assert result_output == [["테스트"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_render_to_file_preserves_template(self):
+        """render_template_to_file - 템플릿 원본 보존"""
+        template_path = create_template([
+            ["Header: {{ title }}"],
+            ["{% for item in items %}"],
+            ["{{ item }}"],
+            ["{% endfor %}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {
+                "title": "리스트",
+                "items": [1, 2, 3]
+            })
+            
+            # 원본 템플릿은 그대로 유지
+            wb_template = load_workbook(template_path)
+            ws_template = wb_template.active
+            assert ws_template['A1'].value == "Header: {{ title }}"
+            assert ws_template['A2'].value == "{% for item in items %}"
         finally:
             os.unlink(template_path)
             if os.path.exists(output_path):

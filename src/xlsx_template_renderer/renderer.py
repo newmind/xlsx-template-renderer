@@ -4,6 +4,7 @@ Processes template files and outputs rendered xlsx files with styles preserved.
 """
 
 import copy
+import shutil
 from typing import Any, Dict, List, Optional, Tuple
 from pathlib import Path
 
@@ -53,16 +54,14 @@ class LoopContext:
 
 def render_template(
     template_path: str,
-    output_path: str,
     data: Dict[str, Any],
     sheets: Optional[List[str]] = None
 ) -> None:
     """
-    Render an xlsx template with the given data.
+    Render an xlsx template in-place.
     
     Args:
-        template_path: Path to the template xlsx file
-        output_path: Path to save the rendered xlsx file
+        template_path: Path to the xlsx file to render (modified in-place)
         data: Dictionary containing the data to render
         sheets: Optional list of sheet names to process. If None, all sheets are processed.
                 Non-existent sheet names are ignored.
@@ -82,8 +81,28 @@ def render_template(
         ws = wb[sheet_name]
         _render_sheet(ws, data, wb)
     
-    # Save the result
-    wb.save(output_path)
+    # Save the result in-place
+    wb.save(template_path)
+
+
+def render_template_to_file(
+    template_path: str,
+    output_path: str,
+    data: Dict[str, Any],
+    sheets: Optional[List[str]] = None
+) -> None:
+    """
+    Copy template and render to a new file.
+    
+    Args:
+        template_path: Path to the template xlsx file
+        output_path: Path to save the rendered xlsx file
+        data: Dictionary containing the data to render
+        sheets: Optional list of sheet names to process. If None, all sheets are processed.
+                Non-existent sheet names are ignored.
+    """
+    shutil.copy2(template_path, output_path)
+    render_template(output_path, data, sheets)
 
 
 def _render_sheet(ws: Worksheet, data: Dict[str, Any], wb: Workbook) -> None:

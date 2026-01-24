@@ -12,7 +12,7 @@ from pathlib import Path
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 
-from xlsx_template_renderer import render_template
+from xlsx_template_renderer import render_template_to_file
 
 
 def create_include_section_template():
@@ -149,7 +149,7 @@ def main():
     }
     
     # 렌더링 실행 (메인 시트만 처리, 컴포넌트 시트는 참조용)
-    render_template(str(template_path), str(output_path), data, sheets=["메인"])
+    render_template_to_file(str(template_path), str(output_path), data, sheets=["메인"])
     print(f"렌더링 완료: {output_path}")
     
     # 결과 확인
