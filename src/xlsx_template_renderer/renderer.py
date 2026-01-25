@@ -122,6 +122,14 @@ def _render_sheet(ws: Worksheet, data: Dict[str, Any], wb: Workbook) -> None:
     if max_row is None or max_row == 0:
         return
     
+    # Check for merged cells - not supported
+    if ws.merged_cells.ranges:
+        merged_info = [str(r) for r in ws.merged_cells.ranges]
+        raise TemplateRenderError(
+            f"시트 '{ws.title}'에 병합된 셀이 있습니다. "
+            f"병합 셀은 지원하지 않습니다. 병합 범위: {', '.join(merged_info)}"
+        )
+    
     # Parse the template structure
     rows_data = []
     for row_idx in range(1, max_row + 1):
