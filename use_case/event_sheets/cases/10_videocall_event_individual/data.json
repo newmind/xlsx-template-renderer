@@ -1,0 +1,94 @@
+{
+  "info": {
+    "artist_name": "TestArtist",
+    "agency_name": "Test Entertainment",
+    "product_name": "TestArtist 1st Album [Test]"
+  },
+  "events": [
+    {
+      "event_title": "1부 개인 영상통화 이벤트",
+      "event_type": "videocall_event_individual",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] INDIVIDUAL VIDEO CALL EVENT",
+        "venue": "온라인",
+        "datetime": {
+          "text": "2025-07-24 (목) 20:00 (KST)",
+          "date": "2025-07-24",
+          "time": "20:00",
+          "day": "목",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "개인 영상통화 이벤트 ▶ 총 25명 (멤버당 5명)",
+          "total": 25,
+          "per_member": 5
+        },
+        "duration": {
+          "text": "1인당 통화시간 180초",
+          "total_minutes": null,
+          "call_duration_seconds": 180
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-10 (목) 18:00 ~ 2025-07-14 (월) 23:59 (KST)",
+          "start": {
+            "date": "2025-07-10",
+            "time": "18:00",
+            "day": "목",
+            "timezone": "KST"
+          },
+          "end": {
+            "date": "2025-07-14",
+            "time": "23:59",
+            "day": "월",
+            "timezone": "KST"
+          }
+        },
+        "winner_announcement": {
+          "text": "2025-07-17 (목) 17:00 이후 메이크스타 이벤트 페이지 및 당첨자 개별 안내",
+          "date": "2025-07-17",
+          "time": "17:00",
+          "day": "목",
+          "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지 및 당첨자 개별 안내"
+        },
+        "concept_request": "'내추럴' 컨셉"
+      },
+      "benefits": [
+        {
+          "type": "for_applicants",
+          "text": "For. 개인 영상통화 이벤트 응모자 전원",
+          "items": [
+            {
+              "text": "1. 미공개 셀카 포토카드 1매 (5종 중 랜덤)"
+            }
+          ]
+        },
+        {
+          "type": "for_winners",
+          "text": "For. 개인 영상통화 이벤트 당첨자",
+          "items": [
+            {
+              "text": "1. 응모한 멤버와 1:1 프라이빗 영상통화 (180초)"
+            },
+            {
+              "text": "2. 응모한 멤버의 기명 사인 포토카드 1매 증정"
+            },
+            {
+              "text": "3. 통화 중 캡처한 스크린샷 1장 제공"
+            }
+          ]
+        },
+        {
+          "type": "special_gift",
+          "text": "★SPECIAL GIFT★",
+          "items": [
+            {
+              "text": "1. 전체 당첨자에게 멤버 친필 편지 1장 증정"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

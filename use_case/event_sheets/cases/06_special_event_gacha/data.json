@@ -1,0 +1,96 @@
+{
+  "info": {
+    "artist_name": "TestArtist",
+    "agency_name": "Test Entertainment",
+    "product_name": "TestArtist 1st Album [Test]"
+  },
+  "events": [
+    {
+      "event_title": "1부 스페셜 이벤트 (가챠)",
+      "event_type": "special_event_gacha",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] SPECIAL GACHA EVENT IN SEOUL",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-07-20 (일) 15:00 (KST)",
+          "date": "2025-07-20",
+          "time": "15:00",
+          "day": "일",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "스페셜 이벤트 ▶ 총 80명",
+          "total": 80
+        },
+        "duration": {
+          "text": "예상 소요시간 60분",
+          "total_minutes": 60,
+          "breakdown": [
+            { "activity": "가챠 추첨", "minutes": 40 },
+            { "activity": "포토타임", "minutes": 20 }
+          ]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-06 (일) 18:00 ~ 2025-07-10 (목) 23:59 (KST)",
+          "start": {
+            "date": "2025-07-06",
+            "time": "18:00",
+            "day": "일",
+            "timezone": "KST"
+          },
+          "end": {
+            "date": "2025-07-10",
+            "time": "23:59",
+            "day": "목",
+            "timezone": "KST"
+          }
+        },
+        "winner_announcement": {
+          "text": "2025-07-13 (일) 15:00 이후 메이크스타 이벤트 페이지 및 당첨자 개별 안내",
+          "date": "2025-07-13",
+          "time": "15:00",
+          "day": "일",
+          "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지 및 당첨자 개별 안내"
+        },
+        "concept_request": "'럭키박스' 컨셉"
+      },
+      "benefits": [
+        {
+          "type": "for_applicants",
+          "text": "For. 스페셜 이벤트 응모자 전원",
+          "items": [
+            {
+              "text": "1. 미공개 셀카 포토카드 1매 (5종 중 랜덤)"
+            }
+          ]
+        },
+        {
+          "type": "for_winners",
+          "text": "For. 스페셜 이벤트 당첨자",
+          "items": [
+            {
+              "text": "1. 가챠 머신 1회 추첨권",
+              "items": [
+                "a. 1등: 사인 폴라로이드 (5명)",
+                "b. 2등: 사인 포토카드 세트 (15명)",
+                "c. 3등: 미공개 포토카드 (30명)",
+                "d. 4등: 기념 굿즈 (30명)"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "special_event",
+          "text": "★SPECIAL EVENT★",
+          "items": [
+            {
+              "text": "1. 1등 당첨자 5명은 멤버와 함께 특별 포토타임 진행"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

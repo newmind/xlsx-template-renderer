@@ -1,0 +1,173 @@
+{
+  "info": {
+    "artist_name": "TestArtist",
+    "agency_name": "Test Entertainment",
+    "product_name": "TestArtist 1st Album [Test]"
+  },
+  "events": [
+    {
+      "event_title": "1부 대면 팬사인회",
+      "event_type": "fansign_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 메인 이벤트",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-08-20 (수) 13:00 (KST)",
+          "date": "2025-08-20",
+          "time": "13:00",
+          "day": "수",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "1부 팬사인회 ▶ 총 100명",
+          "total": 100,
+          "sign_winners": 40,
+          "viewing_winners": 60
+        },
+        "duration": {
+          "text": "예상 소요시간 60분",
+          "total_minutes": 60,
+          "breakdown": [{ "activity": "팬사인회", "minutes": 60 }]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-08-06 (수) 18:00 ~ 2025-08-10 (일) 23:59 (KST)",
+          "start": { "date": "2025-08-06", "time": "18:00", "day": "수", "timezone": "KST" },
+          "end": { "date": "2025-08-10", "time": "23:59", "day": "일", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-13 (수) 17:00 이후",
+          "date": "2025-08-13", "time": "17:00", "day": "수", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'올블랙' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "팬사인회 참석권" }] }
+      ]
+    },
+    {
+      "event_title": "2부 대면 포토회",
+      "event_type": "photo_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 메인 이벤트",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-08-20 (수) 15:00 (KST)",
+          "date": "2025-08-20",
+          "time": "15:00",
+          "day": "수",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "2부 포토회 ▶ 총 50명",
+          "total": 50,
+          "per_member": 10
+        },
+        "duration": {
+          "text": "예상 소요시간 40분",
+          "total_minutes": 40,
+          "breakdown": [{ "activity": "포토 촬영", "minutes": 40 }]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-08-06 (수) 18:00 ~ 2025-08-10 (일) 23:59 (KST)",
+          "start": { "date": "2025-08-06", "time": "18:00", "day": "수", "timezone": "KST" },
+          "end": { "date": "2025-08-10", "time": "23:59", "day": "일", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-13 (수) 17:00 이후",
+          "date": "2025-08-13", "time": "17:00", "day": "수", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'올블랙' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "포토회 참석권" }] }
+      ]
+    },
+    {
+      "event_title": "3부 대면 게임회",
+      "event_type": "game_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 메인 이벤트",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-08-20 (수) 17:00 (KST)",
+          "date": "2025-08-20",
+          "time": "17:00",
+          "day": "수",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "3부 게임회 ▶ 총 80명",
+          "total": 80
+        },
+        "duration": {
+          "text": "예상 소요시간 50분",
+          "total_minutes": 50,
+          "breakdown": [{ "activity": "게임 진행", "minutes": 50 }]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-08-06 (수) 18:00 ~ 2025-08-10 (일) 23:59 (KST)",
+          "start": { "date": "2025-08-06", "time": "18:00", "day": "수", "timezone": "KST" },
+          "end": { "date": "2025-08-10", "time": "23:59", "day": "일", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-13 (수) 17:00 이후",
+          "date": "2025-08-13", "time": "17:00", "day": "수", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'올블랙' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "게임회 참석권" }] }
+      ]
+    },
+    {
+      "event_title": "4부 영상통화 이벤트",
+      "event_type": "videocall_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 스페셜 이벤트",
+        "venue": "온라인",
+        "datetime": {
+          "text": "2025-08-21 (목) 19:00 (KST)",
+          "date": "2025-08-21",
+          "time": "19:00",
+          "day": "목",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "4부 영상통화 ▶ 총 60명",
+          "total": 60,
+          "per_member": 12
+        },
+        "duration": {
+          "text": "1인당 통화시간 90초",
+          "total_minutes": null,
+          "call_duration_seconds": 90
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-08-07 (목) 18:00 ~ 2025-08-11 (월) 23:59 (KST)",
+          "start": { "date": "2025-08-07", "time": "18:00", "day": "목", "timezone": "KST" },
+          "end": { "date": "2025-08-11", "time": "23:59", "day": "월", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-14 (목) 17:00 이후",
+          "date": "2025-08-14", "time": "17:00", "day": "목", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'편안한' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "영상통화 참여권" }] }
+      ]
+    }
+  ]
+}

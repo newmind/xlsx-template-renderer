@@ -1,0 +1,95 @@
+{
+  "info": {
+    "artist_name": "TestArtist",
+    "agency_name": "Test Entertainment",
+    "product_name": "TestArtist 1st Album [Test]"
+  },
+  "events": [
+    {
+      "event_title": "1부 1:1 온라인 투샷회",
+      "event_type": "online_twoshot_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] ONLINE TWO-SHOT EVENT",
+        "venue": "온라인",
+        "datetime": {
+          "text": "2025-07-25 (금) 18:00 (KST)",
+          "date": "2025-07-25",
+          "time": "18:00",
+          "day": "금",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "온라인 투샷회 ▶ 총 50명 (멤버당 10명)",
+          "total": 50,
+          "per_member": 10
+        },
+        "duration": {
+          "text": "1인당 촬영시간 60초",
+          "total_minutes": null,
+          "session_duration_seconds": 60
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-11 (금) 18:00 ~ 2025-07-15 (화) 23:59 (KST)",
+          "start": {
+            "date": "2025-07-11",
+            "time": "18:00",
+            "day": "금",
+            "timezone": "KST"
+          },
+          "end": {
+            "date": "2025-07-15",
+            "time": "23:59",
+            "day": "화",
+            "timezone": "KST"
+          }
+        },
+        "winner_announcement": {
+          "text": "2025-07-18 (금) 17:00 이후 메이크스타 이벤트 페이지 및 당첨자 개별 안내",
+          "date": "2025-07-18",
+          "time": "17:00",
+          "day": "금",
+          "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지 및 당첨자 개별 안내"
+        },
+        "concept_request": "'셀카' 컨셉"
+      },
+      "benefits": [
+        {
+          "type": "for_applicants",
+          "text": "For. 온라인 투샷회 응모자 전원",
+          "items": [
+            {
+              "text": "1. 미공개 셀카 포토카드 1매 (5종 중 랜덤)"
+            }
+          ]
+        },
+        {
+          "type": "for_winners",
+          "text": "For. 온라인 투샷회 당첨자",
+          "items": [
+            {
+              "text": "1. 응모한 멤버와 1:1 온라인 투샷 촬영",
+              "items": [
+                "a. 팬이 원하는 포즈로 촬영 가능",
+                "b. 촬영된 사진은 인화하여 배송"
+              ]
+            },
+            {
+              "text": "2. 응모한 멤버의 사인 포토카드 1매 증정"
+            }
+          ]
+        },
+        {
+          "type": "special_event",
+          "text": "★SPECIAL EVENT★",
+          "items": [
+            {
+              "text": "1. 당첨자 중 10명 (멤버당 2명)을 선정하여 촬영된 사진에 친필 사인 추가"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "info": {
+    "artist_name": "TestArtist",
+    "agency_name": "Test Entertainment",
+    "product_name": "TestArtist 1st Album [Test]"
+  },
+  "events": [
+    {
+      "event_title": "1부 베이커리 이벤트",
+      "event_type": "bakery_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] BAKERY EVENT IN SEOUL",
+        "venue": "서울 OO베이커리",
+        "datetime": {
+          "text": "2025-07-18 (금) 13:00 (KST)",
+          "date": "2025-07-18",
+          "time": "13:00",
+          "day": "금",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "베이커리 이벤트 ▶ 총 30명",
+          "total": 30
+        },
+        "duration": {
+          "text": "예상 소요시간 120분",
+          "total_minutes": 120,
+          "breakdown": [
+            { "activity": "베이킹 체험", "minutes": 60 },
+            { "activity": "멤버와 대화", "minutes": 30 },
+            { "activity": "시식 및 포토타임", "minutes": 30 }
+          ]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-04 (금) 18:00 ~ 2025-07-08 (화) 23:59 (KST)",
+          "start": {
+            "date": "2025-07-04",
+            "time": "18:00",
+            "day": "금",
+            "timezone": "KST"
+          },
+          "end": {
+            "date": "2025-07-08",
+            "time": "23:59",
+            "day": "화",
+            "timezone": "KST"
+          }
+        },
+        "winner_announcement": {
+          "text": "2025-07-11 (금) 15:00 이후 메이크스타 이벤트 페이지 및 당첨자 개별 안내",
+          "date": "2025-07-11",
+          "time": "15:00",
+          "day": "금",
+          "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지 및 당첨자 개별 안내"
+        },
+        "concept_request": "'파티셰' 컨셉"
+      },
+      "benefits": [
+        {
+          "type": "for_applicants",
+          "text": "For. 베이커리 이벤트 응모자 전원",
+          "items": [
+            {
+              "text": "1. 미공개 셀카 포토카드 1매 (5종 중 랜덤)"
+            }
+          ]
+        },
+        {
+          "type": "for_winners",
+          "text": "For. 베이커리 이벤트 당첨자",
+          "items": [
+            {
+              "text": "1. 멤버와 함께 베이킹 체험권"
+            },
+            {
+              "text": "2. 직접 만든 베이커리 포장 및 제공"
+            },
+            {
+              "text": "3. 멤버 친필 메시지가 담긴 기념 엽서 1매"
+            }
+          ]
+        },
+        {
+          "type": "special_gift",
+          "text": "★SPECIAL GIFT★",
+          "items": [
+            {
+              "text": "1. 당첨자 중 5명을 선정하여 멤버와 단체 폴라로이드 촬영"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

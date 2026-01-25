@@ -1,0 +1,173 @@
+{
+  "info": {
+    "artist_name": "TestArtist",
+    "agency_name": "Test Entertainment",
+    "product_name": "TestArtist 1st Album [Test]"
+  },
+  "events": [
+    {
+      "event_title": "1부 대면 팬사인회",
+      "event_type": "fansign_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 오프라인 이벤트",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-08-10 (일) 13:00 (KST)",
+          "date": "2025-08-10",
+          "time": "13:00",
+          "day": "일",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "1부 팬사인회 ▶ 총 80명",
+          "total": 80,
+          "sign_winners": 30,
+          "viewing_winners": 50
+        },
+        "duration": {
+          "text": "예상 소요시간 50분",
+          "total_minutes": 50,
+          "breakdown": [{ "activity": "팬사인회", "minutes": 50 }]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-27 (일) 18:00 ~ 2025-07-31 (목) 23:59 (KST)",
+          "start": { "date": "2025-07-27", "time": "18:00", "day": "일", "timezone": "KST" },
+          "end": { "date": "2025-07-31", "time": "23:59", "day": "목", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-03 (일) 17:00 이후",
+          "date": "2025-08-03", "time": "17:00", "day": "일", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'서머' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "팬사인회 참석권" }] }
+      ]
+    },
+    {
+      "event_title": "2부 대면 게임회",
+      "event_type": "game_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 오프라인 이벤트",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-08-10 (일) 15:00 (KST)",
+          "date": "2025-08-10",
+          "time": "15:00",
+          "day": "일",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "2부 게임회 ▶ 총 60명",
+          "total": 60
+        },
+        "duration": {
+          "text": "예상 소요시간 45분",
+          "total_minutes": 45,
+          "breakdown": [{ "activity": "게임 진행", "minutes": 45 }]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-27 (일) 18:00 ~ 2025-07-31 (목) 23:59 (KST)",
+          "start": { "date": "2025-07-27", "time": "18:00", "day": "일", "timezone": "KST" },
+          "end": { "date": "2025-07-31", "time": "23:59", "day": "목", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-03 (일) 17:00 이후",
+          "date": "2025-08-03", "time": "17:00", "day": "일", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'서머' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "게임회 참석권" }] }
+      ]
+    },
+    {
+      "event_title": "3부 영상통화 이벤트",
+      "event_type": "videocall_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 온라인 이벤트",
+        "venue": "온라인",
+        "datetime": {
+          "text": "2025-08-11 (월) 19:00 (KST)",
+          "date": "2025-08-11",
+          "time": "19:00",
+          "day": "월",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "3부 영상통화 ▶ 총 50명",
+          "total": 50,
+          "per_member": 10
+        },
+        "duration": {
+          "text": "1인당 통화시간 90초",
+          "total_minutes": null,
+          "call_duration_seconds": 90
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-28 (월) 18:00 ~ 2025-08-01 (금) 23:59 (KST)",
+          "start": { "date": "2025-07-28", "time": "18:00", "day": "월", "timezone": "KST" },
+          "end": { "date": "2025-08-01", "time": "23:59", "day": "금", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-04 (월) 17:00 이후",
+          "date": "2025-08-04", "time": "17:00", "day": "월", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'캐주얼' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "영상통화 참여권" }] }
+      ]
+    },
+    {
+      "event_title": "4부 개인 영상통화",
+      "event_type": "videocall_event_individual",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 온라인 이벤트",
+        "venue": "온라인",
+        "datetime": {
+          "text": "2025-08-12 (화) 20:00 (KST)",
+          "date": "2025-08-12",
+          "time": "20:00",
+          "day": "화",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "4부 개인 영상통화 ▶ 총 25명",
+          "total": 25,
+          "per_member": 5
+        },
+        "duration": {
+          "text": "1인당 통화시간 180초",
+          "total_minutes": null,
+          "call_duration_seconds": 180
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-28 (월) 18:00 ~ 2025-08-01 (금) 23:59 (KST)",
+          "start": { "date": "2025-07-28", "time": "18:00", "day": "월", "timezone": "KST" },
+          "end": { "date": "2025-08-01", "time": "23:59", "day": "금", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-08-04 (월) 17:00 이후",
+          "date": "2025-08-04", "time": "17:00", "day": "월", "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'캐주얼' 컨셉"
+      },
+      "benefits": [
+        { "type": "for_applicants", "text": "응모자 전원", "items": [{ "text": "포토카드 1매" }] },
+        { "type": "for_winners", "text": "당첨자", "items": [{ "text": "개인 영상통화 참여권 (180초)" }] }
+      ]
+    }
+  ]
+}

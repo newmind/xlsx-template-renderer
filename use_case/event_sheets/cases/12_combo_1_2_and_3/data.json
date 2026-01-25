@@ -1,0 +1,169 @@
+{
+  "info": {
+    "artist_name": "TestArtist",
+    "agency_name": "Test Entertainment",
+    "product_name": "TestArtist 1st Album [Test]"
+  },
+  "events": [
+    {
+      "event_title": "1부 대면 팬사인회",
+      "event_type": "fansign_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 1부2부 이벤트",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-08-01 (금) 14:00 (KST)",
+          "date": "2025-08-01",
+          "time": "14:00",
+          "day": "금",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "1부 팬사인회 ▶ 총 100명",
+          "total": 100,
+          "sign_winners": 30,
+          "viewing_winners": 70
+        },
+        "duration": {
+          "text": "예상 소요시간 60분",
+          "total_minutes": 60,
+          "breakdown": [
+            { "activity": "팬사인회", "minutes": 45 },
+            { "activity": "포토타임", "minutes": 15 }
+          ]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-18 (금) 18:00 ~ 2025-07-22 (화) 23:59 (KST)",
+          "start": { "date": "2025-07-18", "time": "18:00", "day": "금", "timezone": "KST" },
+          "end": { "date": "2025-07-22", "time": "23:59", "day": "화", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-07-25 (금) 17:00 이후",
+          "date": "2025-07-25",
+          "time": "17:00",
+          "day": "금",
+          "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'교복' 컨셉"
+      },
+      "benefits": [
+        {
+          "type": "for_applicants",
+          "text": "For. 1부 이벤트 응모자 전원",
+          "items": [{ "text": "1. 미공개 포토카드 1매" }]
+        },
+        {
+          "type": "for_winners",
+          "text": "For. 1부 이벤트 당첨자",
+          "items": [{ "text": "1. 팬사인회 참석권" }]
+        }
+      ]
+    },
+    {
+      "event_title": "2부 대면 포토회",
+      "event_type": "photo_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 1부2부 이벤트",
+        "venue": "서울",
+        "datetime": {
+          "text": "2025-08-01 (금) 16:00 (KST)",
+          "date": "2025-08-01",
+          "time": "16:00",
+          "day": "금",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "2부 포토회 ▶ 총 50명",
+          "total": 50,
+          "per_member": 10
+        },
+        "duration": {
+          "text": "예상 소요시간 40분",
+          "total_minutes": 40,
+          "breakdown": [{ "activity": "포토 촬영", "minutes": 40 }]
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-18 (금) 18:00 ~ 2025-07-22 (화) 23:59 (KST)",
+          "start": { "date": "2025-07-18", "time": "18:00", "day": "금", "timezone": "KST" },
+          "end": { "date": "2025-07-22", "time": "23:59", "day": "화", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-07-25 (금) 17:00 이후",
+          "date": "2025-07-25",
+          "time": "17:00",
+          "day": "금",
+          "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'교복' 컨셉"
+      },
+      "benefits": [
+        {
+          "type": "for_applicants",
+          "text": "For. 2부 이벤트 응모자 전원",
+          "items": [{ "text": "1. 미공개 포토카드 1매" }]
+        },
+        {
+          "type": "for_winners",
+          "text": "For. 2부 이벤트 당첨자",
+          "items": [{ "text": "1. 포토회 참석권" }]
+        }
+      ]
+    },
+    {
+      "event_title": "3부 영상통화 이벤트",
+      "event_type": "videocall_event",
+      "overview": {
+        "event_name": "TestArtist 1st Album [Test] 3부 이벤트",
+        "venue": "온라인",
+        "datetime": {
+          "text": "2025-08-02 (토) 19:00 (KST)",
+          "date": "2025-08-02",
+          "time": "19:00",
+          "day": "토",
+          "timezone": "KST"
+        },
+        "winners_count": {
+          "text": "3부 영상통화 ▶ 총 80명",
+          "total": 80,
+          "per_member": 16
+        },
+        "duration": {
+          "text": "1인당 통화시간 90초",
+          "total_minutes": null,
+          "call_duration_seconds": 90
+        },
+        "sales_channel": "메이크스타 웹사이트",
+        "application_period": {
+          "text": "2025-07-19 (토) 18:00 ~ 2025-07-23 (수) 23:59 (KST)",
+          "start": { "date": "2025-07-19", "time": "18:00", "day": "토", "timezone": "KST" },
+          "end": { "date": "2025-07-23", "time": "23:59", "day": "수", "timezone": "KST" }
+        },
+        "winner_announcement": {
+          "text": "2025-07-26 (토) 17:00 이후",
+          "date": "2025-07-26",
+          "time": "17:00",
+          "day": "토",
+          "timezone": "KST",
+          "method": "메이크스타 이벤트 페이지"
+        },
+        "concept_request": "'홈웨어' 컨셉"
+      },
+      "benefits": [
+        {
+          "type": "for_applicants",
+          "text": "For. 3부 이벤트 응모자 전원",
+          "items": [{ "text": "1. 미공개 포토카드 1매" }]
+        },
+        {
+          "type": "for_winners",
+          "text": "For. 3부 이벤트 당첨자",
+          "items": [{ "text": "1. 영상통화 참여권 (90초)" }]
+        }
+      ]
+    }
+  ]
+}
