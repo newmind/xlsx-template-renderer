@@ -2607,3 +2607,356 @@ class TestRenderTemplateToFile:
             os.unlink(template_path)
             if os.path.exists(output_path):
                 os.unlink(output_path)
+
+
+class TestMergedCells:
+    """Tests for merged cells support"""
+    
+    def test_vertical_merge_in_for_loop(self):
+        """for 루프 내 수직 병합 복제 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '{% for item in items %}'
+        ws['A2'] = '{{ item.category }}'  # A2:A3 수직 병합
+        ws['B2'] = '{{ item.name }}'
+        ws['A3'] = ''  # 병합의 일부
+        ws['B3'] = '{{ item.value }}'
+        ws['A4'] = '{% endfor %}'
+        
+        # A2:A3 수직 병합
+        ws.merge_cells('A2:A3')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {
+                'items': [
+                    {'category': '과일', 'name': '사과', 'value': 100},
+                    {'category': '채소', 'name': '당근', 'value': 200},
+                ]
+            }
+            render_template_to_file(template_path, output_path, data)
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 데이터 확인
+            assert ws_out['A1'].value == '과일'
+            assert ws_out['B1'].value == '사과'
+            assert ws_out['B2'].value == 100
+            assert ws_out['A3'].value == '채소'
+            assert ws_out['B3'].value == '당근'
+            assert ws_out['B4'].value == 200
+            
+            # 병합 확인 (2개의 수직 병합이 있어야 함)
+            merged_ranges = list(ws_out.merged_cells.ranges)
+            assert len(merged_ranges) == 2
+            
+            # 병합 범위 확인
+            merge_coords = sorted([str(r) for r in merged_ranges])
+            assert 'A1:A2' in merge_coords
+            assert 'A3:A4' in merge_coords
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_horizontal_merge_in_for_loop(self):
+        """for 루프 내 수평 병합 복제 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '{% for item in items %}'
+        ws['A2'] = '{{ item.title }}'  # A2:B2 수평 병합
+        ws['C2'] = '{{ item.price }}'
+        ws['A3'] = '{% endfor %}'
+        
+        # A2:B2 수평 병합
+        ws.merge_cells('A2:B2')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {
+                'items': [
+                    {'title': '상품A', 'price': 1000},
+                    {'title': '상품B', 'price': 2000},
+                    {'title': '상품C', 'price': 3000},
+                ]
+            }
+            render_template_to_file(template_path, output_path, data)
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 데이터 확인
+            assert ws_out['A1'].value == '상품A'
+            assert ws_out['C1'].value == 1000
+            assert ws_out['A2'].value == '상품B'
+            assert ws_out['C2'].value == 2000
+            assert ws_out['A3'].value == '상품C'
+            assert ws_out['C3'].value == 3000
+            
+            # 병합 확인 (3개의 수평 병합)
+            merged_ranges = list(ws_out.merged_cells.ranges)
+            assert len(merged_ranges) == 3
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_multiple_variables_in_merged_cell(self):
+        """병합 셀 내 여러 변수 치환 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '{% for item in items %}'
+        ws['A2'] = '{{ item.name }} ({{ item.code }})'  # A2:B2 병합, 여러 변수
+        ws['C2'] = '{{ item.price }}'
+        ws['A3'] = '{% endfor %}'
+        
+        ws.merge_cells('A2:B2')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {
+                'items': [
+                    {'name': '사과', 'code': 'APL', 'price': 100},
+                    {'name': '바나나', 'code': 'BNN', 'price': 200},
+                ]
+            }
+            render_template_to_file(template_path, output_path, data)
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            assert ws_out['A1'].value == '사과 (APL)'
+            assert ws_out['A2'].value == '바나나 (BNN)'
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_control_row_merge_error(self):
+        """제어문 행 병합 시 에러 발생 테스트"""
+        from xlsx_template_renderer.exceptions import TemplateRenderError
+        
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '{% for item in items %}'  # 제어문 행
+        ws['A2'] = '{{ item }}'
+        ws['A3'] = '{% endfor %}'
+        
+        # A1:A2 병합 (제어문 행 포함)
+        ws.merge_cells('A1:A2')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            with pytest.raises(TemplateRenderError) as exc_info:
+                render_template_to_file(template_path, output_path, {'items': [1, 2, 3]})
+            
+            assert '제어문 행' in str(exc_info.value)
+            assert '병합' in str(exc_info.value)
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_nested_for_loop_with_merge(self):
+        """중첩 for 루프 내 병합 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '{% for dept in departments %}'
+        ws['A2'] = '{% for emp in dept.employees %}'
+        ws['A3'] = '{{ dept.name }}'  # A3:A4 수직 병합
+        ws['B3'] = '{{ emp.name }}'
+        ws['A4'] = ''
+        ws['B4'] = '{{ emp.role }}'
+        ws['A5'] = '{% endfor %}'
+        ws['A6'] = '{% endfor %}'
+        
+        ws.merge_cells('A3:A4')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {
+                'departments': [
+                    {
+                        'name': '개발팀',
+                        'employees': [
+                            {'name': '김개발', 'role': '시니어'},
+                            {'name': '이주니어', 'role': '주니어'},
+                        ]
+                    },
+                    {
+                        'name': '기획팀',
+                        'employees': [
+                            {'name': '박기획', 'role': '리드'},
+                        ]
+                    }
+                ]
+            }
+            render_template_to_file(template_path, output_path, data)
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 데이터 확인
+            assert ws_out['A1'].value == '개발팀'
+            assert ws_out['B1'].value == '김개발'
+            assert ws_out['B2'].value == '시니어'
+            assert ws_out['A3'].value == '개발팀'
+            assert ws_out['B3'].value == '이주니어'
+            
+            # 병합 개수 확인 (3개: 2 + 1)
+            merged_ranges = list(ws_out.merged_cells.ranges)
+            assert len(merged_ranges) == 3
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_merge_outside_for_loop(self):
+        """for 루프 외부의 병합 유지 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '{{ title }}'  # A1:B1 병합 (루프 외부)
+        ws['A2'] = '{% for item in items %}'
+        ws['A3'] = '{{ item }}'
+        ws['A4'] = '{% endfor %}'
+        ws['A5'] = '합계'  # A5:B5 병합 (루프 외부)
+        
+        ws.merge_cells('A1:B1')
+        ws.merge_cells('A5:B5')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {
+                'title': '상품 목록',
+                'items': ['A', 'B', 'C']
+            }
+            render_template_to_file(template_path, output_path, data)
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 데이터 확인
+            assert ws_out['A1'].value == '상품 목록'
+            assert ws_out['A2'].value == 'A'
+            assert ws_out['A3'].value == 'B'
+            assert ws_out['A4'].value == 'C'
+            assert ws_out['A5'].value == '합계'
+            
+            # 병합 확인 (2개: 헤더 + 푸터)
+            merged_ranges = list(ws_out.merged_cells.ranges)
+            assert len(merged_ranges) == 2
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_merge_with_style_preserved(self):
+        """병합 셀 스타일 유지 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '{% for item in items %}'
+        ws['A2'] = '{{ item.name }}'
+        ws['A2'].font = Font(bold=True, color="FF0000")
+        ws['A2'].fill = PatternFill(start_color="FFFF00", fill_type="solid")
+        ws['A3'] = '{% endfor %}'
+        
+        ws.merge_cells('A2:B2')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {'items': [{'name': '테스트1'}, {'name': '테스트2'}]}
+            render_template_to_file(template_path, output_path, data)
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 스타일 확인
+            assert ws_out['A1'].font.bold is True
+            assert ws_out['A2'].font.bold is True
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
+    
+    def test_empty_items_with_merge(self):
+        """빈 리스트와 병합 테스트"""
+        wb = Workbook()
+        ws = wb.active
+        
+        ws['A1'] = '헤더'
+        ws['A2'] = '{% for item in items %}'
+        ws['A3'] = '{{ item }}'  # A3:B3 병합
+        ws['A4'] = '{% endfor %}'
+        ws['A5'] = '푸터'
+        
+        ws.merge_cells('A1:B1')
+        ws.merge_cells('A3:B3')
+        ws.merge_cells('A5:B5')
+        
+        fd, template_path = tempfile.mkstemp(suffix='.xlsx')
+        os.close(fd)
+        wb.save(template_path)
+        
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            data = {'items': []}  # 빈 리스트
+            render_template_to_file(template_path, output_path, data)
+            
+            wb_out = load_workbook(output_path)
+            ws_out = wb_out.active
+            
+            # 데이터 확인
+            assert ws_out['A1'].value == '헤더'
+            assert ws_out['A2'].value == '푸터'
+            
+            # 병합 확인 (2개: 헤더 + 푸터)
+            merged_ranges = list(ws_out.merged_cells.ranges)
+            assert len(merged_ranges) == 2
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)

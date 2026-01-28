@@ -111,9 +111,10 @@ def _render_sheet(ws: Worksheet, data: Dict[str, Any], wb: Workbook) -> None:
     
     Strategy:
     1. Parse all rows and identify control structures
-    2. Build a list of output rows with context
-    3. Write output rows to a new structure
-    4. Delete/shift rows as needed
+    2. Collect merge information and validate against control rows
+    3. Build a list of output rows with context
+    4. Write output rows to a new structure
+    5. Apply merged cells to output
     """
     # Collect all row data first
     max_row = ws.max_row
@@ -121,14 +122,6 @@ def _render_sheet(ws: Worksheet, data: Dict[str, Any], wb: Workbook) -> None:
     
     if max_row is None or max_row == 0:
         return
-    
-    # Check for merged cells - not supported
-    if ws.merged_cells.ranges:
-        merged_info = [str(r) for r in ws.merged_cells.ranges]
-        raise TemplateRenderError(
-            f"시트 '{ws.title}'에 병합된 셀이 있습니다. "
-            f"병합 셀은 지원하지 않습니다. 병합 범위: {', '.join(merged_info)}"
-        )
     
     # Parse the template structure
     rows_data = []
@@ -142,10 +135,16 @@ def _render_sheet(ws: Worksheet, data: Dict[str, Any], wb: Workbook) -> None:
             })
         rows_data.append(row_cells)
     
-    # Process template and generate output rows
-    output_rows = _process_rows(rows_data, data, wb)
+    # Collect and validate merge information
+    merges_by_row = _collect_merge_info(ws, rows_data)
     
-    # Clear the worksheet
+    # Process template and generate output rows with merge info
+    output_rows, output_merges = _process_rows(rows_data, data, wb, merges_by_row)
+    
+    # Clear the worksheet and remove existing merges
+    for merged_range in list(ws.merged_cells.ranges):
+        ws.unmerge_cells(str(merged_range))
+    
     for row_idx in range(1, max_row + 1):
         for col_idx in range(1, (max_col or 0) + 1):
             cell = ws.cell(row=row_idx, column=col_idx)
@@ -158,9 +157,79 @@ def _render_sheet(ws: Worksheet, data: Dict[str, Any], wb: Workbook) -> None:
             cell.value = cell_data['value']
             _apply_cell_style(cell, cell_data['style'])
     
+    # Apply output merges (convert to 1-based for openpyxl)
+    for merge in output_merges:
+        ws.merge_cells(
+            start_row=merge['start_row'] + 1,
+            end_row=merge['end_row'] + 1,
+            start_column=merge['start_col'] + 1,
+            end_column=merge['end_col'] + 1
+        )
+    
     # Delete extra rows if output is shorter
     if len(output_rows) < max_row:
         ws.delete_rows(len(output_rows) + 1, max_row - len(output_rows))
+
+
+def _collect_merge_info(
+    ws: Worksheet, 
+    rows_data: List[List[dict]]
+) -> Dict[int, List[dict]]:
+    """
+    Collect merge information from worksheet and validate against control rows.
+    
+    Args:
+        ws: Worksheet to collect merge info from
+        rows_data: Parsed row data (0-based index)
+    
+    Returns:
+        Dictionary mapping row index (0-based) to list of merges starting at that row.
+        Each merge is: {'min_col': int, 'max_col': int, 'row_span': int}
+    
+    Raises:
+        TemplateRenderError: If a merge includes a control statement row
+    """
+    # Find all control statement rows (0-based)
+    control_rows = set()
+    for row_idx, row in enumerate(rows_data):
+        if row and row[0]['value']:
+            first_cell_value = str(row[0]['value'])
+            if is_control_statement(first_cell_value):
+                control_rows.add(row_idx)
+    
+    # Collect merge info
+    merges_by_row: Dict[int, List[dict]] = {}
+    
+    for merged_range in ws.merged_cells.ranges:
+        # Convert to 0-based
+        min_row = merged_range.min_row - 1
+        max_row = merged_range.max_row - 1
+        min_col = merged_range.min_col - 1
+        max_col = merged_range.max_col - 1
+        
+        # Check if merge overlaps with any control row
+        merge_rows = set(range(min_row, max_row + 1))
+        overlap = merge_rows & control_rows
+        if overlap:
+            overlap_rows_1based = [r + 1 for r in sorted(overlap)]
+            raise TemplateRenderError(
+                f"시트 '{ws.title}'에서 병합 범위 {merged_range.coord}가 "
+                f"제어문 행({overlap_rows_1based})을 포함합니다. "
+                f"제어문 행을 포함하는 병합은 지원하지 않습니다."
+            )
+        
+        # Store merge info by start row
+        merge_info = {
+            'min_col': min_col,
+            'max_col': max_col,
+            'row_span': max_row - min_row + 1,
+        }
+        
+        if min_row not in merges_by_row:
+            merges_by_row[min_row] = []
+        merges_by_row[min_row].append(merge_info)
+    
+    return merges_by_row
 
 
 def _copy_cell_style(cell: Cell) -> dict:
@@ -194,14 +263,29 @@ def _apply_cell_style(cell: Cell, style: dict) -> None:
 def _process_rows(
     rows_data: List[List[dict]], 
     context: Dict[str, Any],
-    wb: Optional[Workbook] = None
-) -> List[List[dict]]:
+    wb: Optional[Workbook] = None,
+    merges_by_row: Optional[Dict[int, List[dict]]] = None
+) -> Tuple[List[List[dict]], List[dict]]:
     """
-    Process template rows and return output rows.
+    Process template rows and return output rows with merge information.
     
     Handles for loops, if statements, include_section, and variable substitution.
+    
+    Args:
+        rows_data: List of row data (0-based index)
+        context: Data context for variable evaluation
+        wb: Workbook for include_section
+        merges_by_row: Merge info by row index (0-based)
+    
+    Returns:
+        Tuple of (output_rows, output_merges)
+        output_merges: List of {'start_row': int, 'end_row': int, 'start_col': int, 'end_col': int}
     """
+    if merges_by_row is None:
+        merges_by_row = {}
+    
     output_rows = []
+    output_merges = []
     row_idx = 0
     
     while row_idx < len(rows_data):
@@ -261,9 +345,17 @@ def _process_rows(
                     error_row = _create_error_row(error_msg, len(row))
                     output_rows.append(error_row)
                 else:
-                    # Process section rows with variable substitution
-                    processed = _process_rows(section_rows, context, wb)
-                    output_rows.extend(processed)
+                    # Process section rows with variable substitution (no merge info for sections)
+                    processed_rows, processed_merges = _process_rows(section_rows, context, wb, {})
+                    # Offset merges to current output position
+                    for merge in processed_merges:
+                        output_merges.append({
+                            'start_row': len(output_rows) + merge['start_row'],
+                            'end_row': len(output_rows) + merge['end_row'],
+                            'start_col': merge['start_col'],
+                            'end_col': merge['end_col'],
+                        })
+                    output_rows.extend(processed_rows)
                 
                 row_idx += 1
                 continue
@@ -285,15 +377,29 @@ def _process_rows(
                 
                 # Process loop body for each item
                 body_rows = rows_data[row_idx + 1:end_idx]
+                body_start_idx = row_idx + 1
+                
+                # Extract merges for loop body (relative to body start)
+                body_merges = _extract_body_merges(merges_by_row, body_start_idx, end_idx)
                 
                 for idx, item in enumerate(iterable_list):
                     # Create loop context object
                     loop_obj = LoopContext(idx, iterable_length)
                     # Create new context with loop variable and loop object
                     loop_context = {**context, token.loop_var: item, 'loop': loop_obj}
-                    # Recursively process body rows
-                    processed = _process_rows(body_rows, loop_context, wb)
-                    output_rows.extend(processed)
+                    # Recursively process body rows with body merges
+                    processed_rows, processed_merges = _process_rows(body_rows, loop_context, wb, body_merges)
+                    
+                    # Offset processed merges to current output position
+                    current_output_start = len(output_rows)
+                    for merge in processed_merges:
+                        output_merges.append({
+                            'start_row': current_output_start + merge['start_row'],
+                            'end_row': current_output_start + merge['end_row'],
+                            'start_col': merge['start_col'],
+                            'end_col': merge['end_col'],
+                        })
+                    output_rows.extend(processed_rows)
                 
                 # Skip to after endfor
                 row_idx = end_idx + 1
@@ -318,15 +424,35 @@ def _process_rows(
                     if branch_type == 'if' or branch_type == 'elif':
                         if evaluate_condition(condition, context):
                             body_rows = rows_data[start:end]
-                            processed = _process_rows(body_rows, context, wb)
-                            output_rows.extend(processed)
+                            body_merges = _extract_body_merges(merges_by_row, start, end)
+                            processed_rows, processed_merges = _process_rows(body_rows, context, wb, body_merges)
+                            # Offset merges
+                            current_output_start = len(output_rows)
+                            for merge in processed_merges:
+                                output_merges.append({
+                                    'start_row': current_output_start + merge['start_row'],
+                                    'end_row': current_output_start + merge['end_row'],
+                                    'start_col': merge['start_col'],
+                                    'end_col': merge['end_col'],
+                                })
+                            output_rows.extend(processed_rows)
                             executed = True
                             break
                     elif branch_type == 'else':
                         if not executed:
                             body_rows = rows_data[start:end]
-                            processed = _process_rows(body_rows, context, wb)
-                            output_rows.extend(processed)
+                            body_merges = _extract_body_merges(merges_by_row, start, end)
+                            processed_rows, processed_merges = _process_rows(body_rows, context, wb, body_merges)
+                            # Offset merges
+                            current_output_start = len(output_rows)
+                            for merge in processed_merges:
+                                output_merges.append({
+                                    'start_row': current_output_start + merge['start_row'],
+                                    'end_row': current_output_start + merge['end_row'],
+                                    'start_col': merge['start_col'],
+                                    'end_col': merge['end_col'],
+                                })
+                            output_rows.extend(processed_rows)
                         break
                 
                 # Skip to after endif
@@ -339,11 +465,49 @@ def _process_rows(
                 continue
         
         # Regular row - process variables and add to output
+        current_output_row = len(output_rows)
         processed_row = _process_row_variables(row, context)
         output_rows.append(processed_row)
+        
+        # Add merges starting at this row
+        if row_idx in merges_by_row:
+            for merge in merges_by_row[row_idx]:
+                output_merges.append({
+                    'start_row': current_output_row,
+                    'end_row': current_output_row + merge['row_span'] - 1,
+                    'start_col': merge['min_col'],
+                    'end_col': merge['max_col'],
+                })
+        
         row_idx += 1
     
-    return output_rows
+    return output_rows, output_merges
+
+
+def _extract_body_merges(
+    merges_by_row: Dict[int, List[dict]],
+    body_start: int,
+    body_end: int
+) -> Dict[int, List[dict]]:
+    """
+    Extract merges for a body section, converting to relative indices.
+    
+    Args:
+        merges_by_row: Original merge info (absolute indices)
+        body_start: Start index of body (inclusive, 0-based)
+        body_end: End index of body (exclusive, 0-based)
+    
+    Returns:
+        New merge dict with indices relative to body start
+    """
+    result: Dict[int, List[dict]] = {}
+    
+    for row_idx, merges in merges_by_row.items():
+        if body_start <= row_idx < body_end:
+            relative_idx = row_idx - body_start
+            result[relative_idx] = merges
+    
+    return result
 
 
 def _process_row_variables(row: List[dict], context: Dict[str, Any]) -> List[dict]:
