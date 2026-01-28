@@ -377,12 +377,24 @@ def _parse_filter_args(args_str: str) -> List[Any]:
     return args
 
 
+def _unescape_string(s: str) -> str:
+    """
+    Process escape sequences in a string.
+    
+    Examples:
+        '\\n' -> '\n' (newline)
+        '\\t' -> '\t' (tab)
+    """
+    return s.replace('\\n', '\n').replace('\\t', '\t').replace('\\r', '\r').replace('\\\\', '\\')
+
+
 def _parse_arg_value(value_str: str) -> Any:
     """
     Parse a single argument value.
     
     Examples:
         "'hello'" -> 'hello'
+        "'line1\\nline2'" -> 'line1\nline2'
         "123" -> 123
         "12.5" -> 12.5
     """
@@ -391,7 +403,7 @@ def _parse_arg_value(value_str: str) -> Any:
     # String literal
     if (value_str.startswith("'") and value_str.endswith("'")) or \
        (value_str.startswith('"') and value_str.endswith('"')):
-        return value_str[1:-1]
+        return _unescape_string(value_str[1:-1])
     
     # Integer
     try:

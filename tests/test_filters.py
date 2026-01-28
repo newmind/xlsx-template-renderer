@@ -103,6 +103,10 @@ class TestFilterJoin:
     
     def test_join_with_numbers(self):
         assert filter_join([1, 2, 3], '-') == '1-2-3'
+    
+    def test_join_with_newline(self):
+        """newline separator로 join 테스트"""
+        assert filter_join(['line1', 'line2', 'line3'], '\n') == 'line1\nline2\nline3'
 
 
 class TestGetFilter:

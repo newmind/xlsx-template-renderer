@@ -1237,6 +1237,23 @@ class TestFiltersInTemplate:
             os.unlink(template_path)
             if os.path.exists(output_path):
                 os.unlink(output_path)
+    
+    def test_join_filter_with_newline(self):
+        """join 필터 newline separator 테스트 - 셀 내 줄바꿈"""
+        template_path = create_template([
+            ["{{ items|join('\\n') }}"]
+        ])
+        output_path = template_path.replace('.xlsx', '_out.xlsx')
+        
+        try:
+            render_template_to_file(template_path, output_path, {"items": ["line1", "line2", "line3"]})
+            result = read_output(output_path)
+            # 셀 내에 실제 newline 문자가 포함되어야 함
+            assert result == [["line1\nline2\nline3"]]
+        finally:
+            os.unlink(template_path)
+            if os.path.exists(output_path):
+                os.unlink(output_path)
 
 
 class TestTernaryInTemplate:
